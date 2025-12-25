@@ -23,7 +23,9 @@
     "route-event": "^7.4.0"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.19.0",
     "@cloudflare/workers-types": "^4.20250109.0",
+    "@hono/vite-dev-server": "^0.23.0",
     "@preact/preset-vite": "^2.9.4",
     "@substrate-system/debug": "^0.9.32",
     "@substrate-system/tapout": "^0.0.33",
@@ -35,9 +37,10 @@
     "esbuild": "^0.27.2",
     "eslint": "^8.57.1",
     "eslint-config-standard": "^17.1.0",
+    "hono": "^4.11.1",
     "lightningcss": "^1.30.2",
-    "stylelint-config-standard": "^39.0.1",
     "stylelint": "^16.12.0",
+    "stylelint-config-standard": "^39.0.1",
     "tap-spec": "^5.0.0",
     "typescript": "^5.9.3",
     "vite": "^7.3.0",

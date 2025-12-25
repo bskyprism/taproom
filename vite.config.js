@@ -3,6 +3,7 @@ import { defineConfig } from 'vite'
 import browserslist from 'browserslist'
 import { browserslistToTargets } from 'lightningcss'
 import preact from '@preact/preset-vite'
+import devServer from '@hono/vite-dev-server'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -13,6 +14,9 @@ export default defineConfig({
         preact({
             devtoolsInProd: false,
             prefreshEnabled: true,
+        }),
+        devServer({
+            entry: 'src/server/index.ts'
         })
     ],
     // https://github.com/vitejs/vite/issues/8644#issuecomment-1159308803
