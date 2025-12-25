@@ -3,7 +3,7 @@
     "listFiles": true,
     "module": "ES2022",
     "target": "ES2022",
-    "types": ["vite/client"],
+    "types": ["vite/client", "@cloudflare/workers-types"],
     "typeRoots": ["./node_modules"],
     "moduleResolution": "Bundler",
     "esModuleInterop": false,

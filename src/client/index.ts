@@ -1,10 +1,9 @@
 import { html } from 'htm/preact'
 import { FunctionComponent, render } from 'preact'
 import Debug from '@substrate-system/debug'
-import ky from 'ky'
-import { State } from './state.js'
+import { State, AppState } from './state.js'
+import { NavLink } from './components/nav-link.js'
 import Router from './routes/index.js'
-import '@nichoth/components/button-outline.css'
 import './style.css'
 
 const router = Router()
@@ -14,66 +13,54 @@ const debug = Debug('taproom')
 if (import.meta.env.DEV || import.meta.env.MODE === 'staging') {
     // @ts-expect-error DEV env
     window.state = state
+    localStorage.setItem('DEBUG', 'taproom,taproom:*')
+} else {
+    localStorage.removeItem('DEBUG')
 }
 
-// example of calling our API
-const json = await ky.get('/api/helloworld').json()
-
-export const Example:FunctionComponent = function Example () {
-    debug('rendering example...')
+export const Taproom:FunctionComponent = function () {
+    debug('rendering app...')
     const match = router.match(state.route.value)
-    const ChildNode = match.action(match, state.route)
 
-    if (!match) {
-        return html`<div class="404">
-            <h1>404</h1>
+    if (!match || !match.action) {
+        return html`<div class="app">
+            <${Nav} state=${state} />
+            <main class="main-content">
+                <div class="not-found">
+                    <h1>404</h1>
+                    <p>Page not found</p>
+                    <a href="/">Go to Dashboard</a>
+                </div>
+            </main>
         </div>`
     }
 
-    function plus (ev) {
-        ev.preventDefault()
-        State.Increase(state)
-    }
+    const ChildNode = match.action(match, state)
 
-    function minus (ev) {
-        ev.preventDefault()
-        State.Decrease(state)
-    }
-
-    return html`<div>
-        <h1>example</h1>
-
-        <h2>the API response</h2>
-        <pre>
-            ${JSON.stringify(json, null, 2)}
-        </pre>
-
-        <h2>routes</h2>
-        <ul>
-            <li><a href="/aaa">aaa</a></li>
-            <li><a href="/bbb">bbb</a></li>
-            <li><a href="/ccc">ccc</a></li>
-        </ul>
-
-        <h2>counter</h2>
-        <div>
-            <div>count: ${state.count.value}</div>
-            <ul class="count-controls">
-                <li>
-                    <${ButtonOutlinePrimary} onClick=${plus}>
-                        plus
-                    </${ButtonOutline}>
-                </li>
-                <li>
-                    <${ButtonOutline} onClick=${minus}>
-                        minus
-                    </${ButtonOutline}>
-                </li>
-            </ul>
-        </div>
-
-        <${ChildNode} />
+    return html`<div class="app">
+        <${Nav} state=${state} />
+        <main class="main-content">
+            <${ChildNode} state=${state} />
+        </main>
     </div>`
 }
 
-render(html`<${Example} />`, document.getElementById('root')!)
+const Nav:FunctionComponent<{ state:AppState }> = function Nav ({ state }) {
+    const isConnected = state.isConnected.value
+
+    return html`<nav class="sidebar">
+        <div class="sidebar-header">
+            <h2 class="logo">Taproom</h2>
+            <div class="connection-status ${isConnected ? 'connected' : 'disconnected'}">
+                ${isConnected ? 'Connected' : 'Disconnected'}
+            </div>
+        </div>
+
+        <ul class="nav-list">
+            <li><${NavLink} href="/" state=${state}>Dashboard<//></li>
+            <li><${NavLink} href="/repos" state=${state}>Repos<//></li>
+        </ul>
+    </nav>`
+}
+
+render(html`<${Taproom} />`, document.getElementById('root')!)

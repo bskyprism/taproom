@@ -1,30 +1,18 @@
 import { html } from 'htm/preact'
 import Router from '@substrate-system/routes'
 import { HomeRoute } from './home.js'
+import { ReposRoute } from './repos.js'
+import type { AppState } from '../state.js'
 
-export default function _Router ():ReturnType<Router> {
+export default function _Router () {
     const router = new Router()
 
-    router.addRoute('/', () => {
-        return HomeRoute
+    router.addRoute('/', (match, state: AppState) => {
+        return () => html`<${HomeRoute} state=${state} />`
     })
 
-    router.addRoute('/aaa', () => {
-        return () => {
-            return html`<h2>aaa</h2>`
-        }
-    })
-
-    router.addRoute('/bbb', () => {
-        return () => {
-            return html`<h2>bbb</h2>`
-        }
-    })
-
-    router.addRoute('/ccc', () => {
-        return () => {
-            return html`<h2>ccc</h2>`
-        }
+    router.addRoute('/repos', (match, state: AppState) => {
+        return () => html`<${ReposRoute} state=${state} />`
     })
 
     return router

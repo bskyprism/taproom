@@ -3,52 +3,51 @@ import { defineConfig } from 'vite'
 import browserslist from 'browserslist'
 import { browserslistToTargets } from 'lightningcss'
 import preact from '@preact/preset-vite'
-import devServer from '@hono/vite-dev-server'
+import { cloudflare } from '@cloudflare/vite-plugin'
 
 // https://vitejs.dev/config/
-export default defineConfig({
-    define: {
-        global: 'globalThis'
-    },
-    plugins: [
-        preact({
-            devtoolsInProd: false,
-            prefreshEnabled: true,
-        }),
-        devServer({
-            // This tells Vite to run your Hono app as the dev server
-            entry: 'src/server/index.ts'
-        }),
-    ],
-    // https://github.com/vitejs/vite/issues/8644#issuecomment-1159308803
-    esbuild: {
-        logOverride: { 'this-is-undefined-in-esm': 'silent' }
-    },
-    publicDir: '_public',
-    css: {
-        transformer: 'lightningcss',
-        lightningcss: {
-            targets: browserslistToTargets(browserslist('>= 0.25%')),
+export default defineConfig(({ mode }) => {
+    return {
+        define: {
+            global: 'globalThis'
         },
-    },
-    server: {
-        port: 8888,
-        host: true,
-        open: true,
-        proxy: {
-            '/api': {
-                target: 'http://localhost:9999/.netlify/functions',
-                changeOrigin: true,
-                rewrite: path => path.replace(/^\/api/, ''),
+        resolve: {
+            alias: {
+                '@substrate-system/debug': mode === 'production' ?
+                    '@substrate-system/debug/noop' :
+                    '@substrate-system/debug'
+            }
+        },
+        plugins: [
+            cloudflare(),
+            preact({
+                devtoolsInProd: false,
+                prefreshEnabled: true,
+            }),
+        ],
+        // https://github.com/vitejs/vite/issues/8644#issuecomment-1159308803
+        esbuild: {
+            logOverride: { 'this-is-undefined-in-esm': 'silent' }
+        },
+        publicDir: '_public',
+        css: {
+            transformer: 'lightningcss',
+            lightningcss: {
+                targets: browserslistToTargets(browserslist('>= 0.25%')),
             },
         },
-    },
-    build: {
-        cssMinify: 'lightningcss',
-        target: 'esnext',
-        minify: false,
-        outDir: './public',
-        emptyOutDir: true,
-        sourcemap: 'inline'
+        server: {
+            port: 8888,
+            host: true,
+            open: true,
+        },
+        build: {
+            cssMinify: 'lightningcss',
+            target: 'esnext',
+            minify: mode === 'production',
+            outDir: './public',
+            emptyOutDir: true,
+            sourcemap: 'inline'
+        }
     }
 })
