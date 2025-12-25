@@ -43,7 +43,10 @@ function getTapClient (c:Context<{ Bindings:Env }>):Tap {
  * Health check for this server
  */
 app.get('/api/health', (c) => {
-    return c.json({ status: 'ok', service: 'taproom' })
+    return c.json({
+        status: 'ok',
+        service: 'taproom',
+    })
 })
 
 app.get('/health', (c) => {
@@ -170,6 +173,7 @@ export default app
 
 /**
  * Helper
+ * @throws Error 
  */
 async function tapFetch<T> (
     tapUrl:string,  // the full URL for the tap server endpoint
@@ -193,10 +197,7 @@ async function tapFetch<T> (
         const data = await res.json() as T
         return { success: true, data }
     } catch (err) {
-        return {
-            success: false,
-            error: err instanceof Error ? err.message : 'Unknown error'
-        }
+        throw err
     }
 }
 

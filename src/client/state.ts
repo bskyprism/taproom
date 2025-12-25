@@ -67,14 +67,20 @@ State.FetchHealth = async function (state:AppState):Promise<void> {
         } else {
             batch(() => {
                 state.error.value = res.error || 'Failed to fetch health'
-                state.tapHealth.value = { status: 'error', message: res.error }
+                state.tapHealth.value = {
+                    status: 'error',
+                    message: res.error
+                }
             })
             debug('health failure', res)
         }
     } catch (err) {
         batch(() => {
             state.error.value = err instanceof Error ? err.message : 'Unknown error'
-            state.tapHealth.value = { status: 'error', message: state.error.value }
+            state.tapHealth.value = {
+                status: 'error',
+                message: state.error.value
+            }
         })
     } finally {
         state.loading.value = false
