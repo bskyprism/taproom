@@ -9,33 +9,36 @@ export interface TapHealth {
 }
 
 export interface TapRepoInfo {
-    did: string
-    handle?: string
-    pds?: string
-    active: boolean
-    rev?: string
-    recordCount?: number
-    lastSeen?: string
+    did:string
+    handle?:string
+    pds?:string
+    active:boolean
+    rev?:string
+    recordCount?:number
+    lastSeen?:string
 }
 
 export interface TapStats {
-    repoCount: number
-    recordCount: number
-    bufferSize: number
-    connected: boolean
-    uptime?: number
+    repoCount:number;
+    recordCount:number;
+    outboxBuffer:number;
+    resyncBuffer:number;
+    cursors: {
+        firehose:number;
+        listRepos:string;
+    }
 }
 
 export interface AddRepoRequest {
-    did: string
+    did:string
 }
 
 export interface RemoveRepoRequest {
-    did: string
+    did:string
 }
 
 export interface ApiResponse<T> {
-    success: boolean
-    data?: T
-    error?: string
+    success:boolean
+    data?:T
+    error?:string
 }

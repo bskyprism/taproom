@@ -58,7 +58,6 @@ const Nav:FunctionComponent<{ state:AppState }> = function Nav ({ state }) {
 
         <ul class="nav-list">
             <li><${NavLink} href="/" state=${state}>Dashboard<//></li>
-            <li><${NavLink} href="/repos" state=${state}>Repos<//></li>
         </ul>
     </nav>`
 }

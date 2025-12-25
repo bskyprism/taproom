@@ -4,7 +4,6 @@ import ky from 'ky'
 import Debug from '@substrate-system/debug'
 import type {
     TapHealth,
-    TapRepoInfo,
     TapStats,
     ApiResponse
 } from '../shared.js'
@@ -16,7 +15,6 @@ export interface AppState {
     // Tap server state
     tapHealth:Signal<TapHealth|null>
     tapStats:Signal<TapStats|null>
-    repos:Signal<TapRepoInfo[]>
     loading:Signal<boolean>
     error:Signal<string|null>
     // Derived state
@@ -32,7 +30,6 @@ export function State ():AppState {
         // Tap server state
         tapHealth: signal<TapHealth | null>(null),
         tapStats: signal<TapStats | null>(null),
-        repos: signal<TapRepoInfo[]>([]),
         loading: signal<boolean>(false),
         error: signal<string | null>(null),
         // Derived state
@@ -72,6 +69,7 @@ State.FetchHealth = async function (state:AppState):Promise<void> {
                 state.error.value = res.error || 'Failed to fetch health'
                 state.tapHealth.value = { status: 'error', message: res.error }
             })
+            debug('health failure', res)
         }
     } catch (err) {
         batch(() => {
@@ -91,108 +89,21 @@ State.FetchStats = async function (state: AppState): Promise<void> {
         state.loading.value = true
         state.error.value = null
     })
+
     try {
-        const res = await ky.get('/api/tap/stats').json<ApiResponse<TapStats>>()
-        if (res.success && res.data) {
-            state.tapStats.value = res.data
-        } else {
-            state.error.value = res.error || 'Failed to fetch stats'
-        }
+        const res = await ky.get('/api/tap/stats').json<TapStats>()
+        debug('resssssssss', res)
+        state.tapStats.value = res
     } catch (err) {
         state.error.value = err instanceof Error ? err.message : 'Unknown error'
     } finally {
         state.loading.value = false
-    }
-}
-
-/**
- * Fetch tracked repos
- */
-State.FetchRepos = async function (state:AppState):Promise<void> {
-    batch(() => {
-        state.loading.value = true
-        state.error.value = null
-    })
-
-    debug('state.error', state.error.value)
-    try {
-        const res = await ky.get('/api/tap/repos')
-            .json<ApiResponse<TapRepoInfo[]>>()
-        if (res.data) {
-            state.repos.value = res.data
-        } else {
-            debug('res.error', res.error)
-            state.error.value = res.error || 'Failed to fetch repos'
-        }
-    } catch (err) {
-        state.error.value = err instanceof Error ? err.message : 'Unknown error'
-        debug('err message', (err as Error).message)
-    } finally {
-        state.loading.value = false
-        debug('state.error', state.error.value)
     }
 }
 
 State.init = function (state:AppState):void {
-    State.FetchRepos(state)
     State.FetchHealth(state)
     State.FetchStats(state)
-}
-
-/**
- * Add a repo to track
- */
-State.AddRepo = async function (state: AppState, did: string): Promise<boolean> {
-    batch(() => {
-        state.loading.value = true
-        state.error.value = null
-    })
-    try {
-        const res = await ky.post('/api/tap/repos/add', {
-            json: { did }
-        }).json<ApiResponse<unknown>>()
-
-        if (res.success) {
-            await State.FetchRepos(state)
-            return true
-        } else {
-            state.error.value = res.error || 'Failed to add repo'
-            return false
-        }
-    } catch (err) {
-        state.error.value = err instanceof Error ? err.message : 'Unknown error'
-        return false
-    } finally {
-        state.loading.value = false
-    }
-}
-
-/**
- * Remove a repo from tracking
- */
-State.RemoveRepo = async function (state: AppState, did: string): Promise<boolean> {
-    batch(() => {
-        state.loading.value = true
-        state.error.value = null
-    })
-    try {
-        const res = await ky.post('/api/tap/repos/remove', {
-            json: { did }
-        }).json<ApiResponse<unknown>>()
-
-        if (res.success) {
-            await State.FetchRepos(state)
-            return true
-        } else {
-            state.error.value = res.error || 'Failed to remove repo'
-            return false
-        }
-    } catch (err) {
-        state.error.value = err instanceof Error ? err.message : 'Unknown error'
-        return false
-    } finally {
-        state.loading.value = false
-    }
 }
 
 /**
@@ -202,6 +113,5 @@ State.RefreshAll = async function (state: AppState): Promise<void> {
     await Promise.all([
         State.FetchHealth(state),
         State.FetchStats(state),
-        State.FetchRepos(state),
     ])
 }

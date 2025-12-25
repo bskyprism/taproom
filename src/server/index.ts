@@ -10,6 +10,21 @@ import type {
     ApiResponse
 } from '../shared.js'
 
+export type StatsPath =
+    |'repo-count'
+    |'record-count'
+    |'outbox-buffer'
+    |'resync-buffer'
+    |'cursors' 
+
+// export type Stats = {
+//     count;
+//     records;
+//     outboxBuffer;
+//     resyncBuffer;
+//     cursors;
+// }
+
 // `Env` is in worker-config.d.ts
 const app = new Hono<{ Bindings:Env }>()
 
@@ -41,8 +56,7 @@ app.get('/health', (c) => {
 app.get('/api/tap/health', async (c) => {
     const tapUrl = c.env.TAP_SERVER_URL
     const result = await tapFetch<TapHealth>(
-        tapUrl,
-        '/health',
+        tapUrl + '/health',
         c.env.TAP_ADMIN_PASSWORD
     )
     return c.json(result)
@@ -52,38 +66,20 @@ app.get('/api/tap/health', async (c) => {
  * Get tap server stats
  */
 app.get('/api/tap/stats', async (c) => {
+    const pw = c.env.TAP_ADMIN_PASSWORD
     const tapUrl = c.env.TAP_SERVER_URL
-    const result = await tapFetch<TapStats>(
-        tapUrl,
-        '/stats',
-        c.env.TAP_ADMIN_PASSWORD
-    )
-    return c.json(result)
+    const res = await fetchStats(tapUrl, pw)
+    return c.json(res)
 })
 
 /**
- * Get detailed stats
+ * Get specific stats
  */
 app.get('/api/tap/stats/:type', async (c) => {
     const tapUrl = c.env.TAP_SERVER_URL
-    const type = c.req.param('type')
+    const type:StatsPath = c.req.param('type') as StatsPath
     const result = await tapFetch<unknown>(
-        tapUrl,
-        `/stats/${type}`,
-        c.env.TAP_ADMIN_PASSWORD
-    )
-
-    return c.json(result)
-})
-
-/**
- * List tracked repos
- */
-app.get('/api/tap/repos', async (c) => {
-    const tapUrl = c.env.TAP_SERVER_URL
-    const result = await tapFetch<TapRepoInfo[]>(
-        tapUrl,
-        '/repos',
+        tapUrl + `/stats/${type}`,
         c.env.TAP_ADMIN_PASSWORD
     )
 
@@ -176,8 +172,7 @@ export default app
  * Helper
  */
 async function tapFetch<T> (
-    tapUrl:string,
-    path:string,
+    tapUrl:string,  // the full URL for the tap server endpoint
     adminPassword:string,
     options?:RequestInit
 ):Promise<ApiResponse<T>> {
@@ -188,7 +183,7 @@ async function tapFetch<T> (
         }
         headers.Authorization = formatAdminAuthHeader(adminPassword)
 
-        const res = await fetch(tapUrl + path, { ...options, headers })
+        const res = await fetch(tapUrl, { ...options, headers })
 
         if (!res.ok) {
             const text = await res.text()
@@ -203,4 +198,42 @@ async function tapFetch<T> (
             error: err instanceof Error ? err.message : 'Unknown error'
         }
     }
+}
+
+async function fetchStats (tapUrl:string, pw:string):Promise<Partial<TapStats>> {
+    const count = await tapFetch<{
+        repo_count:number
+    }>(tapUrl + '/stats/repo-count', pw)
+    const records = await tapFetch<{
+        record_count:number
+    }>(tapUrl + '/stats/record-count', pw)
+    const obb = await tapFetch<{
+        outbox_buffer:number
+    }>(tapUrl + '/stats/outbox-buffer', pw)
+    const rsb = await tapFetch<{
+        resync_buffer:number
+    }>(tapUrl + '/stats/resync-buffer', pw)
+    const cursors = await tapFetch<{
+        firehose:number,
+        list_repos:string
+    }>(tapUrl + '/stats/cursors', pw)
+
+    console.log('got the stats.......', count)
+    console.log('got the stats.......', records)
+    console.log('got the stats.......', obb)
+    console.log('got the stats.......', rsb)
+    console.log('got the stats.......', cursors)
+
+    const stats = {
+        repoCount: count.data?.repo_count,
+        recordCount: records.data?.record_count,
+        outboxBuffer: obb.data?.outbox_buffer,
+        resyncBuffer: rsb.data?.resync_buffer,
+        cursors: {
+            firehose: cursors.data?.firehose ?? 0,
+            listRepos: cursors.data?.list_repos ?? ''
+        }
+    }
+
+    return stats
 }

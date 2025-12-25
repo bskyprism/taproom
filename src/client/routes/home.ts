@@ -52,30 +52,20 @@ export const HomeRoute:FunctionComponent<{ state:AppState }> = function ({
             </div>
 
             <div class="stat-card">
-                <h3>Buffer Size</h3>
-                <div class="stat-value">${stats?.bufferSize ?? '—'}</div>
+                <h3>Buffer Sizes</h3>
+                <dl>
+                    <div>
+                        <dt>Outbox</dt>
+                        <dd>${stats?.outboxBuffer ?? '—'}</dd>
+                    </div>
+                    <div>
+                        <dt>Resync</dt>
+                        <dd>${stats?.resyncBuffer ?? '—'}</dd>
+                    </div>
+                </dl>
             </div>
         </div>
-
-        ${stats?.uptime !== undefined && html`
-            <div class="info-section">
-                <h3>Uptime</h3>
-                <p>${formatUptime(stats.uptime)}</p>
-            </div>
-        `}
     </div>`
 }
 
-function formatUptime (seconds: number): string {
-    const days = Math.floor(seconds / 86400)
-    const hours = Math.floor((seconds % 86400) / 3600)
-    const minutes = Math.floor((seconds % 3600) / 60)
-
-    const parts: string[] = []
-    if (days > 0) parts.push(`${days}d`)
-    if (hours > 0) parts.push(`${hours}h`)
-    if (minutes > 0) parts.push(`${minutes}m`)
-    if (parts.length === 0) parts.push(`${seconds}s`)
-
-    return parts.join(' ')
-}
+// <div class="stat-value">${stats?.bufferSize ?? '—'}</div>
