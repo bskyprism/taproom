@@ -18,7 +18,7 @@
 	"assets": {
 		"directory": "./public/",  // SPA build output
 		"not_found_handling": "single-page-application",
-		// "binding": "ASSETS"
+		"binding": "ASSETS"
 	},
 	"kv_namespaces": [
 		{

@@ -1,5 +1,4 @@
 import { Hono } from 'hono'
-import { serveStatic } from 'hono/cloudflare-workers'
 
 const app = new Hono()
 
@@ -9,9 +8,11 @@ const app = new Hono()
 app.get('/api/hello', (c) => c.json({ message: 'Hello from Hono!' }))
 
 /**
- * Serve Static Assets (The Preact build)
- * This works in conjunction with the 'assets' setting in wrangler
+ * Serve static assets (Preact frontend)
+ * This works in both dev (via Vite) and prod (via Cloudflare Assets)
  */
-app.get('/*', serveStatic({ root: './' }))
+app.all('*', (c) => {
+    return c.env.ASSETS.fetch(c.req.raw)
+})
 
 export default app

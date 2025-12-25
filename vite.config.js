@@ -16,8 +16,9 @@ export default defineConfig({
             prefreshEnabled: true,
         }),
         devServer({
+            // This tells Vite to run your Hono app as the dev server
             entry: 'src/server/index.ts'
-        })
+        }),
     ],
     // https://github.com/vitejs/vite/issues/8644#issuecomment-1159308803
     esbuild: {
