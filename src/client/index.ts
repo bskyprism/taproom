@@ -1,9 +1,8 @@
 import { html } from 'htm/preact'
 import { FunctionComponent, render } from 'preact'
 import Debug from '@substrate-system/debug'
-import { State, AppState } from './state.js'
-import { NavLink } from './components/nav-link.js'
-// import { ELLIPSIS } from './constants.js'
+import { State } from './state.js'
+import { Nav } from './components/nav.js'
 import Router from './routes/index.js'
 import './style.css'
 
@@ -44,25 +43,6 @@ export const Taproom:FunctionComponent = function () {
             <${ChildNode} state=${state} />
         </main>
     </div>`
-}
-
-const Nav:FunctionComponent<{ state:AppState }> = function Nav ({ state }) {
-    const isConnected = state.isConnected.value
-
-    return html`<nav class="sidebar">
-        <div class="sidebar-header">
-            <h1 class="logo">Taproom</h1>
-            <div>
-                <span class="connection-status ${isConnected ? 'connected' : 'disconnected'}">
-                    ${isConnected ? 'Connected' : 'Disconnected'}
-                </span>
-            </div>
-        </div>
-
-        <ul class="nav-list">
-            <li><${NavLink} href="/" state=${state}>Dashboard<//></li>
-        </ul>
-    </nav>`
 }
 
 render(html`<${Taproom} />`, document.getElementById('root')!)

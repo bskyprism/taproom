@@ -1,0 +1,49 @@
+import { type FunctionComponent } from 'preact'
+import { html } from 'htm/preact'
+import { type AppState } from '../state.js'
+import './nav.css'
+
+export interface NavLinkProps {
+    href:string
+    state:AppState
+    children:preact.ComponentChildren
+}
+
+export const NavLink:FunctionComponent<NavLinkProps> = function ({
+    href,
+    state,
+    children
+}) {
+    const isActive = href === state.route.value
+
+    return html`<a
+        href=${href}
+        class="nav-link ${isActive ? 'active' : ''}"
+    >${children}</a>`
+}
+
+export const Nav:FunctionComponent<{ state:AppState }> = function Nav ({
+    state
+}) {
+    const isConnected = state.isConnected.value
+
+    return html`<nav class="sidebar">
+        <div class="sidebar-header">
+            <h1 class="logo">Taproom</h1>
+            <div>
+                <span class="connection-status ${isConnected ? 'connected' : 'disconnected'}">
+                    ${isConnected ? 'Connected' : 'Disconnected'}
+                </span>
+            </div>
+        </div>
+
+        <ul class="nav-list">
+            <li>
+                <${NavLink} href="/" state=${state}>Dashboard<//>
+            </li>
+            <li>
+                <${NavLink} href="/repos" state=${state}>Repos<//>
+            </li>
+        </ul>
+    </nav>`
+}

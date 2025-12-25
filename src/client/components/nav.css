@@ -1,0 +1,23 @@
+.nav-list {
+    display: flex;
+    gap: 1rem;
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0;
+
+    & a {
+        transition: all 0.4s;
+        text-decoration-thickness: 1px;
+        color: inherit;
+
+        &:hover {
+            text-underline-offset: 2px;
+        }
+
+        &.active {
+            /* font-weight: 600; */
+            text-decoration-thickness: 2px;
+            text-underline-offset: 4px;
+        }
+    }
+}

@@ -88,7 +88,7 @@ export const HomeRoute:FunctionComponent<{ state:AppState }> = function ({
                         </dd>
                     </div>
                     <div>
-                        <dt>listRepos</dt>
+                        <dt>list_repos</dt>
                         <dd>${numberToString(
                             parseInt(state.tapStats.value?.cursors.listRepos || '')
                         )}</dd>
@@ -98,5 +98,3 @@ export const HomeRoute:FunctionComponent<{ state:AppState }> = function ({
         </div>
     </div>`
 }
-
-// <div class="stat-value">${stats?.bufferSize ?? '—'}</div>
