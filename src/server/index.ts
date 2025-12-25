@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import { Tap, SimpleIndexer } from '@atproto/tap'
 import type {
     TapHealth,
     TapRepoInfo,
