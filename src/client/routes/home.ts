@@ -78,7 +78,9 @@ export const HomeRoute:FunctionComponent<{ state:AppState }> = function ({
                         <dt>firehose</dt>
                         <dd>
                             <span>
-                                ${state.tapStats.value?.cursors.firehose}
+                                ${new Intl.NumberFormat('en-US').format(
+                                    state.tapStats.value?.cursors.firehose || 0
+                                )}
                             </span>
                             <span>
                                 (${numberToString(state.tapStats.value?.cursors.firehose || 0)})

@@ -21,6 +21,10 @@ body {
 }
 
 dl {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
     & dt {
         font-weight: bold;
     }
@@ -125,8 +129,8 @@ h1 {
     & h3 {
         border-bottom: 1px solid;
         margin: 0;
-        margin-bottom: 0.4rem;
-        font-size: 0.875rem;
+        margin-bottom: 1rem;
+        font-size: 1rem;
         color: var(--color-muted);
     }
 }
