@@ -2,6 +2,7 @@ import { html } from 'htm/preact'
 import { FunctionComponent } from 'preact'
 import { Button } from '../components/button.js'
 import type { AppState } from '../state.js'
+import { numberToString } from '../util.js'
 import { State } from '../state.js'
 
 export const HomeRoute:FunctionComponent<{ state:AppState }> = function ({
@@ -66,6 +67,29 @@ export const HomeRoute:FunctionComponent<{ state:AppState }> = function ({
                     <div>
                         <dt>Resync</dt>
                         <dd>${stats?.resyncBuffer ?? '—'}</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <div class="stat-card">
+                <h3>Cursors</h3>
+                <dl>
+                    <div>
+                        <dt>firehose</dt>
+                        <dd>
+                            <span>
+                                ${state.tapStats.value?.cursors.firehose}
+                            </span>
+                            <span>
+                                (${numberToString(state.tapStats.value?.cursors.firehose || 0)})
+                            </span>
+                        </dd>
+                    </div>
+                    <div>
+                        <dt>listRepos</dt>
+                        <dd>${numberToString(
+                            parseInt(state.tapStats.value?.cursors.listRepos || '')
+                        )}</dd>
                     </div>
                 </dl>
             </div>

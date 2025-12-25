@@ -24,10 +24,10 @@ export function State ():AppState {
         _setRoute: onRoute.setRoute.bind(onRoute),
         route: signal<string>(location.pathname + location.search),
         // Tap server state
-        tapHealth: signal<TapHealth | null>(null),
-        tapStats: signal<TapStats | null>(null),
+        tapHealth: signal<TapHealth|null>(null),
+        tapStats: signal<TapStats|null>(null),
         loading: signal<boolean>(false),
-        error: signal<string | null>(null),
+        error: signal<string|null>(null),
         // Derived state
         isConnected: computed(() => {
             return state.tapHealth.value?.status === 'ok'

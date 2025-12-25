@@ -24,7 +24,7 @@ export interface TapStats {
     recordCount:number;
     outboxBuffer:number;
     resyncBuffer:number;
-    cursors: {
+    cursors:{
         firehose:number;
         listRepos:string;
     }

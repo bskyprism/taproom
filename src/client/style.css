@@ -7,6 +7,7 @@
     --color-muted: #6b7280;
     --color-border: #b3b3b3;
     --spacing: 1rem;
+    --min: 20ch;
 }
 
 * {
@@ -27,6 +28,12 @@ dl {
     & div {
         display: flex;
         gap: 1rem;
+    }
+
+    /* for the cursors card */
+    & dd {
+        display: flex;
+        gap: 0.5rem;
     }
 }
 
@@ -78,6 +85,7 @@ dl {
 
         &.active {
             font-weight: 600;
+            border-bottom: 2px solid;
         }
     }
 }
@@ -102,7 +110,7 @@ h1 {
 /* Stats */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 30ch), 1fr));
     gap: var(--spacing);
     margin-bottom: var(--spacing);
 }
@@ -110,6 +118,7 @@ h1 {
 .stat-card {
     padding: var(--spacing);
     border: 1px solid;
+    min-height: 15rem;
 
     & h3 {
         border-bottom: 1px solid;

@@ -13,8 +13,7 @@ export const NavLink:FunctionComponent<NavLinkProps> = function ({
     state,
     children
 }) {
-    const isActive = state.route.value === href ||
-        (href !== '/' && state.route.value.startsWith(href))
+    const isActive = href === state.route.value
 
     return html`<a
         href=${href}
