@@ -19,7 +19,8 @@ export const HomeRoute:FunctionComponent<{ state:AppState }> = function ({
 
     return html`<div class="route home-route">
         <header class="page-header">
-            <h1>Dashboard</h1>
+            <h2>Dashboard</h2>
+            ${state.tapHealth.value?.url}
             <${Button}
                 class="btn btn-secondary"
                 onClick=${handleRefresh}

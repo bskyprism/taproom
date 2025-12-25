@@ -51,7 +51,7 @@ dl {
     }
 
     & span {
-        min-width: 6rem;
+        min-width: 10rem;
     }
 }
 

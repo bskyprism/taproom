@@ -3,7 +3,7 @@ import { FunctionComponent, render } from 'preact'
 import Debug from '@substrate-system/debug'
 import { State, AppState } from './state.js'
 import { NavLink } from './components/nav-link.js'
-import { ELLIPSIS } from './constants.js'
+// import { ELLIPSIS } from './constants.js'
 import Router from './routes/index.js'
 import './style.css'
 
@@ -55,9 +55,6 @@ const Nav:FunctionComponent<{ state:AppState }> = function Nav ({ state }) {
             <div>
                 <span class="connection-status ${isConnected ? 'connected' : 'disconnected'}">
                     ${isConnected ? 'Connected' : 'Disconnected'}
-                </span>
-                <span class="url">
-                    ${state.tapHealth.value?.url || ELLIPSIS}
                 </span>
             </div>
         </div>
