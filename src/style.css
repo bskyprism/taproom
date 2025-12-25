@@ -1,0 +1,27 @@
+.count-controls {
+    list-style: none;
+    padding: 0;
+
+    & li {
+        margin-bottom: 1rem;
+    }
+}
+
+button {
+    cursor: pointer;
+
+    &:hover {
+        background: seashell;
+    }
+}
+
+body {
+    & div {
+        margin-bottom: 1rem;
+    }
+}
+
+pre {
+    padding: 2rem;
+    background-color: #d3d3d363;
+}

@@ -1,0 +1,7 @@
+{
+    "extends": ["stylelint-config-standard"],
+    "rules": {
+        "selector-nested-pattern": "^&",
+        "comment-empty-line-before": null
+    }
+}
