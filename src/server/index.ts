@@ -218,12 +218,6 @@ async function fetchStats (tapUrl:string, pw:string):Promise<Partial<TapStats>> 
         list_repos:string
     }>(tapUrl + '/stats/cursors', pw)
 
-    console.log('got the stats.......', count)
-    console.log('got the stats.......', records)
-    console.log('got the stats.......', obb)
-    console.log('got the stats.......', rsb)
-    console.log('got the stats.......', cursors)
-
     const stats = {
         repoCount: count.data?.repo_count,
         recordCount: records.data?.record_count,

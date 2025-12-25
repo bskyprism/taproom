@@ -1,5 +1,6 @@
 import { html } from 'htm/preact'
 import { FunctionComponent } from 'preact'
+import { Button } from '../components/button.js'
 import type { AppState } from '../state.js'
 import { State } from '../state.js'
 
@@ -19,13 +20,13 @@ export const HomeRoute:FunctionComponent<{ state:AppState }> = function ({
     return html`<div class="route home-route">
         <header class="page-header">
             <h1>Dashboard</h1>
-            <button
+            <${Button}
                 class="btn btn-secondary"
                 onClick=${handleRefresh}
                 disabled=${loading}
             >
-                ${loading ? 'Refreshing...' : 'Refresh'}
-            </button>
+                Refresh
+            <//>
         </header>
 
         ${error && html`<div class="error-banner">${error}</div>`}
@@ -33,7 +34,10 @@ export const HomeRoute:FunctionComponent<{ state:AppState }> = function ({
         <div class="stats-grid">
             <div class="stat-card">
                 <h3>Server Status</h3>
-                <div class="stat-value ${health?.status === 'ok' ? 'status-ok' : 'status-error'}">
+                <div class="stat-value ${health?.status === 'ok' ?
+                    'status-ok' :
+                    'status-error'}"
+                >
                     ${health?.status === 'ok' ? 'Connected' : 'Disconnected'}
                 </div>
                 ${health?.message && html`<div class="stat-detail">
