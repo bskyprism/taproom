@@ -1,6 +1,6 @@
-import { Hono } from 'hono'
+import { Context, Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { Tap, SimpleIndexer } from '@atproto/tap'
+import { Tap, formatAdminAuthHeader } from '@atproto/tap'
 import type {
     TapHealth,
     TapRepoInfo,
@@ -10,17 +10,22 @@ import type {
     ApiResponse
 } from '../shared.js'
 
-type Bindings = {
-    ASSETS: Fetcher
-    TAP_SERVER_URL: string
-}
-
-const app = new Hono<{ Bindings: Bindings }>()
+// `Env` is in worker-config.d.ts
+const app = new Hono<{ Bindings:Env }>()
 
 app.use('/api/*', cors())
 
 /**
- * Health check for the worker itself
+ * Create a Tap client instance for the request
+ */
+function getTapClient (c:Context<{ Bindings:Env }>):Tap {
+    return new Tap(c.env.TAP_SERVER_URL, {
+        adminPassword: c.env.TAP_ADMIN_PASSWORD
+    })
+}
+
+/**
+ * Health check for this server
  */
 app.get('/api/health', (c) => {
     return c.json({ status: 'ok', service: 'taproom' })
@@ -31,11 +36,15 @@ app.get('/health', (c) => {
 })
 
 /**
- * Get tap server health
+ * Health check for tap service
  */
 app.get('/api/tap/health', async (c) => {
     const tapUrl = c.env.TAP_SERVER_URL
-    const result = await tapFetch<TapHealth>(tapUrl, '/health')
+    const result = await tapFetch<TapHealth>(
+        tapUrl,
+        '/health',
+        c.env.TAP_ADMIN_PASSWORD
+    )
     return c.json(result)
 })
 
@@ -44,7 +53,11 @@ app.get('/api/tap/health', async (c) => {
  */
 app.get('/api/tap/stats', async (c) => {
     const tapUrl = c.env.TAP_SERVER_URL
-    const result = await tapFetch<TapStats>(tapUrl, '/stats')
+    const result = await tapFetch<TapStats>(
+        tapUrl,
+        '/stats',
+        c.env.TAP_ADMIN_PASSWORD
+    )
     return c.json(result)
 })
 
@@ -54,21 +67,26 @@ app.get('/api/tap/stats', async (c) => {
 app.get('/api/tap/stats/:type', async (c) => {
     const tapUrl = c.env.TAP_SERVER_URL
     const type = c.req.param('type')
-    const result = await tapFetch<unknown>(tapUrl, `/stats/${type}`)
+    const result = await tapFetch<unknown>(
+        tapUrl,
+        `/stats/${type}`,
+        c.env.TAP_ADMIN_PASSWORD
+    )
+
     return c.json(result)
 })
 
-// just using this production URL temporarily
-const TAP_URL = 'https://drerings.fly.dev/'
-
 /**
  * List tracked repos
- * @TODO error here
  */
 app.get('/api/tap/repos', async (c) => {
-    const tapUrl = TAP_URL
-    console.log('*****', tapUrl, '********')
-    const result = await tapFetch<TapRepoInfo[]>(tapUrl, '/repos')
+    const tapUrl = c.env.TAP_SERVER_URL
+    const result = await tapFetch<TapRepoInfo[]>(
+        tapUrl,
+        '/repos',
+        c.env.TAP_ADMIN_PASSWORD
+    )
+
     return c.json(result)
 })
 
@@ -76,48 +94,68 @@ app.get('/api/tap/repos', async (c) => {
  * Get info for a specific DID
  */
 app.get('/api/tap/info/:did', async (c) => {
-    const tapUrl = c.env.TAP_SERVER_URL
+    const tap = getTapClient(c)
     const did = c.req.param('did')
-    const result = await tapFetch<TapRepoInfo>(tapUrl, `/info/${did}`)
-    return c.json(result)
+    try {
+        const data = await tap.getRepoInfo(did)
+        return c.json({ success: true, data } as ApiResponse<typeof data>)
+    } catch (err) {
+        return c.json({
+            success: false,
+            error: err instanceof Error ? err.message : 'Unknown error'
+        } as ApiResponse<TapRepoInfo>)
+    }
 })
 
 /**
  * Resolve a DID
  */
 app.get('/api/tap/resolve/:did', async (c) => {
-    const tapUrl = c.env.TAP_SERVER_URL
+    const tap = getTapClient(c)
     const did = c.req.param('did')
-    const result = await tapFetch<unknown>(tapUrl, `/resolve/${did}`)
-    return c.json(result)
+    try {
+        const data = await tap.resolveDid(did)
+        return c.json({ success: true, data } as ApiResponse<typeof data>)
+    } catch (err) {
+        return c.json({
+            success: false,
+            error: err instanceof Error ? err.message : 'Unknown error'
+        } as ApiResponse<unknown>)
+    }
 })
 
 /**
  * Add a repo to track
  */
 app.post('/api/tap/repos/add', async (c) => {
-    const tapUrl = c.env.TAP_SERVER_URL
+    const tap = getTapClient(c)
     const body = await c.req.json<AddRepoRequest>()
-
-    const result = await tapFetch<unknown>(tapUrl, '/repos/add', {
-        method: 'POST',
-        body: JSON.stringify(body),
-    })
-    return c.json(result)
+    try {
+        await tap.addRepos([body.did])
+        return c.json({ success: true } as ApiResponse<void>)
+    } catch (err) {
+        return c.json({
+            success: false,
+            error: err instanceof Error ? err.message : 'Unknown error'
+        } as ApiResponse<void>)
+    }
 })
 
 /**
  * Remove a repo from tracking
  */
 app.post('/api/tap/repos/remove', async (c) => {
-    const tapUrl = c.env.TAP_SERVER_URL
+    const tap = getTapClient(c)
     const body = await c.req.json<RemoveRepoRequest>()
-
-    const result = await tapFetch<unknown>(tapUrl, '/repos/remove', {
-        method: 'POST',
-        body: JSON.stringify(body),
-    })
-    return c.json(result)
+    try {
+        await tap.removeRepos([body.did])
+        return c.json({ success: true } as ApiResponse<void>)
+    } catch (err) {
+        return c.json({
+            success: false,
+            error: err instanceof Error ? err.message : 'Unknown error'
+        } as ApiResponse<void>)
+    }
 })
 
 /**
@@ -140,16 +178,17 @@ export default app
 async function tapFetch<T> (
     tapUrl:string,
     path:string,
+    adminPassword:string,
     options?:RequestInit
-): Promise<ApiResponse<T>> {
+):Promise<ApiResponse<T>> {
     try {
-        const res = await fetch(`${tapUrl}${path}`, {
-            ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                ...options?.headers,
-            },
-        })
+        const headers:Record<string, string> = {
+            'Content-Type': 'application/json',
+            ...options?.headers as Record<string, string>,
+        }
+        headers.Authorization = formatAdminAuthHeader(adminPassword)
+
+        const res = await fetch(tapUrl + path, { ...options, headers })
 
         if (!res.ok) {
             const text = await res.text()

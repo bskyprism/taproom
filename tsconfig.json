@@ -25,6 +25,7 @@
     "declarationMap": true,
   },
   "include": [
+    "./worker-config.d.ts",
     "example",
     "src/**/*",
     "test",
