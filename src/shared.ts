@@ -4,8 +4,9 @@
  */
 
 export interface TapHealth {
-    status: 'ok' | 'error'
-    message?: string
+    status:'ok'|'error';
+    message?:string;
+    url?:string;
 }
 
 export interface TapRepoInfo {
@@ -35,10 +36,4 @@ export interface AddRepoRequest {
 
 export interface RemoveRepoRequest {
     did:string
-}
-
-export interface ApiResponse<T> {
-    success:boolean
-    data?:T
-    error?:string
 }

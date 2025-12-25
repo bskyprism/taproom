@@ -1,13 +1,12 @@
 import { Context, Hono } from 'hono'
+import type { ContentfulStatusCode } from 'hono/utils/http-status'
 import { cors } from 'hono/cors'
 import { Tap, formatAdminAuthHeader } from '@atproto/tap'
 import type {
     TapHealth,
-    TapRepoInfo,
     TapStats,
     AddRepoRequest,
-    RemoveRepoRequest,
-    ApiResponse
+    RemoveRepoRequest
 } from '../shared.js'
 
 export type StatsPath =
@@ -15,15 +14,7 @@ export type StatsPath =
     |'record-count'
     |'outbox-buffer'
     |'resync-buffer'
-    |'cursors' 
-
-// export type Stats = {
-//     count;
-//     records;
-//     outboxBuffer;
-//     resyncBuffer;
-//     cursors;
-// }
+    |'cursors'
 
 // `Env` is in worker-config.d.ts
 const app = new Hono<{ Bindings:Env }>()
@@ -57,52 +48,74 @@ app.get('/health', (c) => {
  * Health check for tap service
  */
 app.get('/api/tap/health', async (c) => {
-    const tapUrl = c.env.TAP_SERVER_URL
-    const result = await tapFetch<TapHealth>(
-        tapUrl + '/health',
-        c.env.TAP_ADMIN_PASSWORD
-    )
-    return c.json(result)
+    try {
+        const data = await tapFetch<TapHealth>(
+            c.env.TAP_SERVER_URL + '/health',
+            c.env.TAP_ADMIN_PASSWORD
+        )
+
+        return c.json({
+            ...data,
+            url: c.env.TAP_SERVER_URL
+        })
+    } catch (err) {
+        const status:ContentfulStatusCode = err instanceof TapFetchError ?
+            err.status :
+            500
+        const message = err instanceof Error ? err.message : 'Unknown error'
+
+        return c.json({ error: message }, status)
+    }
 })
 
 /**
- * Get tap server stats
+ * Get all tap server stats
  */
 app.get('/api/tap/stats', async (c) => {
-    const pw = c.env.TAP_ADMIN_PASSWORD
-    const tapUrl = c.env.TAP_SERVER_URL
-    const res = await fetchStats(tapUrl, pw)
-    return c.json(res)
+    try {
+        const data = await fetchStats(
+            c.env.TAP_SERVER_URL,
+            c.env.TAP_ADMIN_PASSWORD
+        )
+        return c.json(data)
+    } catch (err) {
+        const status:ContentfulStatusCode = err instanceof TapFetchError ?
+            err.status :
+            500
+        const message = err instanceof Error ? err.message : 'Unknown error'
+        return c.json({ error: message }, status)
+    }
 })
 
 /**
  * Get specific stats
  */
 app.get('/api/tap/stats/:type', async (c) => {
-    const tapUrl = c.env.TAP_SERVER_URL
-    const type:StatsPath = c.req.param('type') as StatsPath
-    const result = await tapFetch<unknown>(
-        tapUrl + `/stats/${type}`,
-        c.env.TAP_ADMIN_PASSWORD
-    )
-
-    return c.json(result)
+    try {
+        const type:StatsPath = c.req.param('type') as StatsPath
+        const data = await tapFetch<unknown>(
+            c.env.TAP_SERVER_URL + `/stats/${type}`,
+            c.env.TAP_ADMIN_PASSWORD
+        )
+        return c.json(data)
+    } catch (err) {
+        const status:ContentfulStatusCode = err instanceof TapFetchError ? err.status : 500
+        const message = err instanceof Error ? err.message : 'Unknown error'
+        return c.json({ error: message }, status)
+    }
 })
 
 /**
  * Get info for a specific DID
  */
 app.get('/api/tap/info/:did', async (c) => {
-    const tap = getTapClient(c)
-    const did = c.req.param('did')
     try {
-        const data = await tap.getRepoInfo(did)
-        return c.json({ success: true, data } as ApiResponse<typeof data>)
+        const tap = getTapClient(c)
+        const data = await tap.getRepoInfo(c.req.param('did'))
+        return c.json(data)
     } catch (err) {
-        return c.json({
-            success: false,
-            error: err instanceof Error ? err.message : 'Unknown error'
-        } as ApiResponse<TapRepoInfo>)
+        const message = err instanceof Error ? err.message : 'Unknown error'
+        return c.json({ error: message }, 500)
     }
 })
 
@@ -110,16 +123,13 @@ app.get('/api/tap/info/:did', async (c) => {
  * Resolve a DID
  */
 app.get('/api/tap/resolve/:did', async (c) => {
-    const tap = getTapClient(c)
-    const did = c.req.param('did')
     try {
-        const data = await tap.resolveDid(did)
-        return c.json({ success: true, data } as ApiResponse<typeof data>)
+        const tap = getTapClient(c)
+        const data = await tap.resolveDid(c.req.param('did'))
+        return c.json(data)
     } catch (err) {
-        return c.json({
-            success: false,
-            error: err instanceof Error ? err.message : 'Unknown error'
-        } as ApiResponse<unknown>)
+        const message = err instanceof Error ? err.message : 'Unknown error'
+        return c.json({ error: message }, 500)
     }
 })
 
@@ -127,16 +137,14 @@ app.get('/api/tap/resolve/:did', async (c) => {
  * Add a repo to track
  */
 app.post('/api/tap/repos/add', async (c) => {
-    const tap = getTapClient(c)
-    const body = await c.req.json<AddRepoRequest>()
     try {
+        const tap = getTapClient(c)
+        const body = await c.req.json<AddRepoRequest>()
         await tap.addRepos([body.did])
-        return c.json({ success: true } as ApiResponse<void>)
+        return c.body(null, 204)
     } catch (err) {
-        return c.json({
-            success: false,
-            error: err instanceof Error ? err.message : 'Unknown error'
-        } as ApiResponse<void>)
+        const message = err instanceof Error ? err.message : 'Unknown error'
+        return c.json({ error: message }, 500)
     }
 })
 
@@ -144,16 +152,14 @@ app.post('/api/tap/repos/add', async (c) => {
  * Remove a repo from tracking
  */
 app.post('/api/tap/repos/remove', async (c) => {
-    const tap = getTapClient(c)
-    const body = await c.req.json<RemoveRepoRequest>()
     try {
+        const tap = getTapClient(c)
+        const body = await c.req.json<RemoveRepoRequest>()
         await tap.removeRepos([body.did])
-        return c.json({ success: true } as ApiResponse<void>)
+        return c.body(null, 204)
     } catch (err) {
-        return c.json({
-            success: false,
-            error: err instanceof Error ? err.message : 'Unknown error'
-        } as ApiResponse<void>)
+        const message = err instanceof Error ? err.message : 'Unknown error'
+        return c.json({ error: message }, 500)
     }
 })
 
@@ -171,64 +177,58 @@ app.all('*', (c) => {
 
 export default app
 
+class TapFetchError extends Error {
+    status:ContentfulStatusCode
+    constructor (message:string, status:number) {
+        super(message)
+        this.status = status as ContentfulStatusCode
+    }
+}
+
 /**
- * Helper
- * @throws Error 
+ * Helper - returns data directly or throws TapFetchError
  */
 async function tapFetch<T> (
     tapUrl:string,  // the full URL for the tap server endpoint
     adminPassword:string,
     options?:RequestInit
-):Promise<ApiResponse<T>> {
-    try {
-        const headers:Record<string, string> = {
-            'Content-Type': 'application/json',
-            ...options?.headers as Record<string, string>,
-        }
-        headers.Authorization = formatAdminAuthHeader(adminPassword)
-
-        const res = await fetch(tapUrl, { ...options, headers })
-
-        if (!res.ok) {
-            const text = await res.text()
-            return { success: false, error: text || res.statusText }
-        }
-
-        const data = await res.json() as T
-        return { success: true, data }
-    } catch (err) {
-        throw err
+):Promise<T> {
+    const headers:Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...options?.headers as Record<string, string>,
     }
+    headers.Authorization = formatAdminAuthHeader(adminPassword)
+
+    const res = await fetch(tapUrl, { ...options, headers })
+
+    if (!res.ok) {
+        const text = await res.text()
+        throw new TapFetchError(text || res.statusText, res.status)
+    }
+
+    return await res.json() as T
 }
 
-async function fetchStats (tapUrl:string, pw:string):Promise<Partial<TapStats>> {
-    const count = await tapFetch<{
-        repo_count:number
-    }>(tapUrl + '/stats/repo-count', pw)
-    const records = await tapFetch<{
-        record_count:number
-    }>(tapUrl + '/stats/record-count', pw)
-    const obb = await tapFetch<{
-        outbox_buffer:number
-    }>(tapUrl + '/stats/outbox-buffer', pw)
-    const rsb = await tapFetch<{
-        resync_buffer:number
-    }>(tapUrl + '/stats/resync-buffer', pw)
-    const cursors = await tapFetch<{
-        firehose:number,
-        list_repos:string
-    }>(tapUrl + '/stats/cursors', pw)
+async function fetchStats (tapUrl:string, pw:string):Promise<TapStats> {
+    const [count, records, obb, rsb, cursors] = await Promise.all([
+        tapFetch<{ repo_count:number }>(tapUrl + '/stats/repo-count', pw),
+        tapFetch<{ record_count:number }>(tapUrl + '/stats/record-count', pw),
+        tapFetch<{ outbox_buffer:number }>(tapUrl + '/stats/outbox-buffer', pw),
+        tapFetch<{ resync_buffer:number }>(tapUrl + '/stats/resync-buffer', pw),
+        tapFetch<{
+            firehose:number,
+            list_repos:string
+        }>(tapUrl + '/stats/cursors', pw)
+    ])
 
-    const stats = {
-        repoCount: count.data?.repo_count,
-        recordCount: records.data?.record_count,
-        outboxBuffer: obb.data?.outbox_buffer,
-        resyncBuffer: rsb.data?.resync_buffer,
+    return {
+        repoCount: count.repo_count,
+        recordCount: records.record_count,
+        outboxBuffer: obb.outbox_buffer,
+        resyncBuffer: rsb.resync_buffer,
         cursors: {
-            firehose: cursors.data?.firehose ?? 0,
-            listRepos: cursors.data?.list_repos ?? ''
+            firehose: cursors.firehose,
+            listRepos: cursors.list_repos
         }
     }
-
-    return stats
 }

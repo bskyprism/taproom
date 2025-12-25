@@ -18,6 +18,7 @@
   "dependencies": {
     "@atproto/tap": "^0.0.2",
     "@preact/signals": "^2.5.1",
+    "@substrate-system/css-normalize": "^0.0.13",
     "@substrate-system/routes": "^5.0.0",
     "htm": "^3.1.1",
     "ky": "^1.14.1",

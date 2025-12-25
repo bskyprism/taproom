@@ -1,3 +1,5 @@
+@import url("../../node_modules/@substrate-system/css-normalize/dist/index.css");
+
 :root {
     --color-primary: #2563eb;
     --color-danger: #dc2626;
@@ -24,6 +26,7 @@ dl {
 
     & div {
         display: flex;
+        gap: 1rem;
     }
 }
 
@@ -35,18 +38,24 @@ dl {
 
 /* Navigation */
 .sidebar {
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid;
     padding-bottom: var(--spacing);
     margin-bottom: var(--spacing);
 }
 
-.logo {
-    margin: 0 0 0.5rem;
+.sidebar-header {
+    & div {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.9rem;
+    }
+
+    & span {
+        min-width: 6rem;
+    }
 }
 
 .connection-status {
-    font-size: 0.75rem;
-
     &.connected {
         color: var(--color-success);
     }
@@ -71,6 +80,11 @@ dl {
             font-weight: 600;
         }
     }
+}
+
+h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0;
 }
 
 /* Page layout */

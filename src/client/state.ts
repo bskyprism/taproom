@@ -2,11 +2,7 @@ import { Signal, signal, computed, batch } from '@preact/signals'
 import Route from 'route-event'
 import ky from 'ky'
 import Debug from '@substrate-system/debug'
-import type {
-    TapHealth,
-    TapStats,
-    ApiResponse
-} from '../shared.js'
+import type { TapHealth, TapStats } from '../shared.js'
 const debug = Debug('taproom:state')
 
 export interface AppState {
@@ -61,26 +57,15 @@ State.FetchHealth = async function (state:AppState):Promise<void> {
     })
 
     try {
-        const res = await ky.get('/api/tap/health').json<ApiResponse<TapHealth>>()
-        if (res.success && res.data) {
-            state.tapHealth.value = res.data
-        } else {
-            batch(() => {
-                state.error.value = res.error || 'Failed to fetch health'
-                state.tapHealth.value = {
-                    status: 'error',
-                    message: res.error
-                }
-            })
-            debug('health failure', res)
-        }
+        const data = await ky.get('/api/tap/health').json<TapHealth>()
+        state.tapHealth.value = data
+        debug('fetched health', data)
     } catch (err) {
+        const message = err instanceof Error ? err.message : 'Unknown error'
+        debug('health failure', err)
         batch(() => {
-            state.error.value = err instanceof Error ? err.message : 'Unknown error'
-            state.tapHealth.value = {
-                status: 'error',
-                message: state.error.value
-            }
+            state.error.value = message
+            state.tapHealth.value = { status: 'error', message }
         })
     } finally {
         state.loading.value = false
