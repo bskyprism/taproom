@@ -20,6 +20,10 @@ body {
     line-height: 1.5;
 }
 
+#root {
+    min-height: 100vh;
+}
+
 dl {
     display: flex;
     flex-direction: column;

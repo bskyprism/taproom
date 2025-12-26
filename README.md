@@ -5,7 +5,11 @@ View information about a
 
 This is a Cloudflare application 
 
-## develop
+<details><summary><h2>Contents</h2></summary>
+<!-- toc -->
+</details>
+
+## Develop
 
 Start a local Cloudflare instance via Vite.
 

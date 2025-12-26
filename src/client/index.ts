@@ -36,8 +36,18 @@ export const Taproom:FunctionComponent = function () {
     }
 
     const ChildNode = match.action(match, state)
+    const isConnected = state.isConnected.value
 
     return html`<div class="app">
+        <div class="sidebar-header">
+            <h1 class="logo">Taproom</h1>
+            <div>
+                <span class="connection-status ${isConnected ? 'connected' : 'disconnected'}">
+                    ${isConnected ? 'Connected' : 'Disconnected'}
+                </span>
+            </div>
+        </div>
+
         <${Nav} state=${state} />
         <main class="main-content">
             <${ChildNode} state=${state} />

@@ -25,18 +25,7 @@ export const NavLink:FunctionComponent<NavLinkProps> = function ({
 export const Nav:FunctionComponent<{ state:AppState }> = function Nav ({
     state
 }) {
-    const isConnected = state.isConnected.value
-
     return html`<nav class="sidebar">
-        <div class="sidebar-header">
-            <h1 class="logo">Taproom</h1>
-            <div>
-                <span class="connection-status ${isConnected ? 'connected' : 'disconnected'}">
-                    ${isConnected ? 'Connected' : 'Disconnected'}
-                </span>
-            </div>
-        </div>
-
         <ul class="nav-list">
             <li>
                 <${NavLink} href="/" state=${state}>Dashboard<//>
