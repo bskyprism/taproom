@@ -11,7 +11,13 @@
 		"nodejs_compat"
 	],
 	"kv_namespaces": [],
-	"d1_databases": [],
+	"d1_databases": [
+		{
+			"binding": "taproom_auth",
+			"database_name": "taproom-auth",
+			"database_id": "88295dcf-f0d6-411f-9427-1e6a8dec0467"
+		}
+	],
 	"assets": {
 		"directory": "./public/",
 		"not_found_handling": "single-page-application",

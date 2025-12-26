@@ -27,6 +27,12 @@ npm run deploy # Build and deploy to Cloudflare
 
 ## Notes
 
+### Add a D1 database
+
+```sh
+npx wrangler d1 create taproom-auth
+```
+
 ### A Test DID
 
 ```
