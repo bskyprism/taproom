@@ -6,7 +6,7 @@ import Debug from '@substrate-system/debug'
 import type { TapHealth, TapStats } from '../shared.js'
 const debug = Debug('taproom:state')
 
-export type RequestFor<T, E = HTTPError> = 'resolving'|null|E|T
+export type RequestFor<T, E = Error> = 'resolving'|null|E|T
 export type InfoType = Awaited<ReturnType<Tap['getRepoInfo']>>
 
 export interface AppState {
@@ -16,7 +16,7 @@ export interface AppState {
     tapHealth:Signal<TapHealth|null>;
     tapStats:Signal<TapStats|null>;
     loading:Signal<boolean>;
-    didInfo:Signal<RequestFor<Awaited<ReturnType<Tap['getRepoInfo']>>>>;
+    didInfo:Signal<RequestFor<Awaited<ReturnType<Tap['getRepoInfo']>>, HTTPError>>;
     error:Signal<string|null>;
     // Derived state
     isConnected:Signal<boolean>;
@@ -60,18 +60,14 @@ export function State ():AppState {
 
 State.didInfo = async function (state:AppState, did:string):Promise<void> {
     const urlDid = encodeURIComponent(did.trim())
+    state.didInfo.value = 'resolving'
 
     try {
-        debug('bbbbbbbbbbbbbbbbb')
         const info = await ky.get(`/api/tap/info/${urlDid}`)
-        debug('cccccccccccc', info)
         const infoData = await info.json<ReturnType<Tap['getRepoInfo']>>()
-        debug('aaaaaaaaaaaa')
         state.didInfo.value = infoData
     } catch (_err) {
         const err = _err as HTTPError
-        const errString = await err.response.text()
-        debug('dddddddddddddddddddddddd', errString)
         state.didInfo.value = err
     }
 }

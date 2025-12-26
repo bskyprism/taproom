@@ -1,11 +1,12 @@
 import { html } from 'htm/preact'
 import { useCallback } from 'preact/hooks'
 import { type FunctionComponent } from 'preact'
-import { batch, useComputed, useSignal } from '@preact/signals'
-import ky from 'ky'
+import { batch, useComputed, useSignal, useSignalEffect } from '@preact/signals'
+import ky, { HTTPError } from 'ky'
 import Debug from '@substrate-system/debug'
 import { Button } from '../components/button.js'
 import { type AppState, type InfoType, State } from '../state.js'
+import { useAsyncComputed } from '../util.js'
 import './lookup.css'
 const debug = Debug('taproom:lookup')
 
@@ -20,12 +21,21 @@ export const LookupRoute:FunctionComponent<{ state:AppState }> = function ({
     const infoResolving = useComputed(() => {
         return state.didInfo.value === 'resolving'
     })
-    const infoError = useComputed<null|Error>(() => {
-        if (!(state.didInfo.value instanceof Error)) {
+    const infoError = useAsyncComputed<string|null>(async () => {
+        if (!(state.didInfo.value instanceof HTTPError)) {
+            // if not an error
             return null
         }
 
-        return state.didInfo.value
+        // is an error
+        // if there is an error, get the error text
+        const text = await state.didInfo.value.response.text()
+        return state.didInfo.value.response.status + ` ${text}`
+        // 404 Not found
+    })
+
+    useSignalEffect(() => {
+        debug('info resolving', infoResolving.value)
     })
 
     const resolvedInfo = useComputed<null|InfoType>(() => {
@@ -155,14 +165,14 @@ export const LookupRoute:FunctionComponent<{ state:AppState }> = function ({
 
             ${
                 infoError.value ? html`
-                ${infoError.value.message.toLocaleLowerCase().includes('not found') ?
+                ${infoError.value.toLowerCase().includes('not found') ?
                     html`<p>
                         That DID was not found. Is it being followed by your Tap server?
                     </p>` :
                     null
                 }
                 <div class="error-banner">
-                    ${infoError.value.message}
+                    ${infoError.value}
                 </div>` :
                 html`
                     <div class="response${infoDid.value ? ' error' : ''}">

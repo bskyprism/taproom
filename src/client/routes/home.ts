@@ -1,5 +1,5 @@
 import { html } from 'htm/preact'
-import { FunctionComponent } from 'preact'
+import type { FunctionComponent } from 'preact'
 import { Button } from '../components/button.js'
 import type { AppState } from '../state.js'
 import { numberToString } from '../util.js'

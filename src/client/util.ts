@@ -1,3 +1,5 @@
+import { useSignal, type Signal, useSignalEffect } from '@preact/signals'
+
 /**
  * Format a number as an English string.
  *
@@ -14,4 +16,22 @@ export function numberToString (n:number|null):string {
     })
 
     return formatter.format(n)
+}
+
+export function useAsyncComputed<T> (
+    compute:()=>Promise<T>,
+):Signal<T|null> {
+    const result = useSignal<T|null>(null)
+
+    useSignalEffect(() => {
+        compute()
+            .then(data => {
+                result.value = data
+            })
+            .catch(err => {
+                result.value = err
+            })
+    })
+
+    return result
 }

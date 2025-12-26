@@ -1,6 +1,6 @@
 import { html } from 'htm/preact'
 import { useCallback } from 'preact/hooks'
-import { FunctionComponent } from 'preact'
+import type { FunctionComponent } from 'preact'
 import { useSignal } from '@preact/signals'
 import ky from 'ky'
 import Debug from '@substrate-system/debug'
