@@ -9,9 +9,17 @@ const debug = Debug('taproom:state')
 export type RequestFor<T, E = Error> = 'resolving'|null|E|T
 export type InfoType = Awaited<ReturnType<Tap['getRepoInfo']>>
 
+export interface AuthStatus {
+    registered:boolean;
+    authenticated:boolean;
+}
+
 export interface AppState {
     route:Signal<string>;
     _setRoute:(path:string)=>void;
+    // Auth state
+    auth:Signal<AuthStatus|null>;
+    authLoading:Signal<boolean>;
     // Tap server state
     tapHealth:Signal<TapHealth|null>;
     tapStats:Signal<TapStats|null>;
@@ -20,6 +28,7 @@ export interface AppState {
     error:Signal<string|null>;
     // Derived state
     isConnected:Signal<boolean>;
+    isAuthenticated:Signal<boolean>;
 }
 
 export function State ():AppState {
@@ -28,6 +37,9 @@ export function State ():AppState {
     const state:AppState = {
         _setRoute: onRoute.setRoute.bind(onRoute),
         route: signal<string>(location.pathname + location.search),
+        // Auth state
+        auth: signal<AuthStatus|null>(null),
+        authLoading: signal<boolean>(false),
         // Tap server state
         tapHealth: signal<TapHealth|null>(null),
         tapStats: signal<TapStats|null>(null),
@@ -37,6 +49,9 @@ export function State ():AppState {
         // Derived state
         isConnected: computed(() => {
             return state.tapHealth.value?.status === 'ok'
+        }),
+        isAuthenticated: computed(() => {
+            return state.auth.value?.authenticated ?? false
         }),
     }
 
@@ -119,6 +134,36 @@ State.FetchStats = async function (state: AppState): Promise<void> {
 State.init = function (state:AppState):void {
     State.FetchHealth(state)
     State.FetchStats(state)
+    State.FetchAuthStatus(state)
+}
+
+/**
+ * Fetch auth status
+ */
+State.FetchAuthStatus = async function (state:AppState):Promise<void> {
+    state.authLoading.value = true
+    try {
+        const data = await ky.get('/api/auth/status').json<AuthStatus>()
+        state.auth.value = data
+        debug('fetched auth status', data)
+    } catch (err) {
+        debug('auth status error', err)
+        state.auth.value = { registered: false, authenticated: false }
+    } finally {
+        state.authLoading.value = false
+    }
+}
+
+/**
+ * Logout
+ */
+State.Logout = async function (state:AppState):Promise<void> {
+    try {
+        await ky.post('/api/auth/logout')
+        state.auth.value = { registered: true, authenticated: false }
+    } catch (err) {
+        debug('logout error', err)
+    }
 }
 
 /**

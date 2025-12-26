@@ -3,6 +3,7 @@ import { type FunctionComponent, render } from 'preact'
 import Debug from '@substrate-system/debug'
 import { State } from './state.js'
 import { Nav } from './components/nav.js'
+import { Auth } from './components/auth.js'
 import Router from './routes/index.js'
 import './style.css'
 
@@ -41,10 +42,11 @@ export const Taproom:FunctionComponent = function () {
     return html`<div class="app">
         <div class="sidebar-header">
             <h1 class="logo">Taproom</h1>
-            <div>
+            <div class="header-status">
                 <span class="connection-status ${isConnected ? 'connected' : 'disconnected'}">
                     ${isConnected ? 'Connected' : 'Disconnected'}
                 </span>
+                <${Auth} state=${state} />
             </div>
         </div>
 

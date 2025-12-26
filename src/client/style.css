@@ -3,9 +3,13 @@
 :root {
     --color-primary: #2563eb;
     --color-danger: #dc2626;
+    --color-error: #dc2626;
     --color-success: #16a34a;
+    --color-success-bg: #dcfce7;
     --color-muted: #6b7280;
     --color-border: #b3b3b3;
+    --color-text-secondary: #6b7280;
+    --color-bg-secondary: #f3f4f6;
     --spacing: 1rem;
     --min: 20ch;
 }
@@ -61,15 +65,18 @@ dl {
 }
 
 .sidebar-header {
-    & div {
-        display: flex;
-        gap: 1rem;
-        font-size: 0.9rem;
-    }
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
 
-    & span {
-        min-width: 10rem;
-    }
+.header-status {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.9rem;
 }
 
 .connection-status {

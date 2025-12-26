@@ -1,8 +1,9 @@
 import { type Context, Hono } from 'hono'
 import type { ContentfulStatusCode } from 'hono/utils/http-status'
 import { cors } from 'hono/cors'
-import { bearerAuth } from 'hono/bearer-auth'
+import { getCookie } from 'hono/cookie'
 import { Tap, formatAdminAuthHeader } from '@atproto/tap'
+import { createAuthRouter, requireAuth } from './auth.js'
 import type {
     TapHealth,
     TapStats,
@@ -22,17 +23,30 @@ const app = new Hono<{ Bindings:Env }>()
 
 app.use('/api/*', cors())
 
+// Mount auth routes
+app.route('/api/auth', createAuthRouter())
+
 /**
- * Protect write routes with bearer auth
- * Token must be provided in Authorization header: Bearer <token>
+ * Protect write routes with passkey session auth
+ * Falls back to bearer token for backwards compatibility / API access
  */
-app.use('/api/tap/repos/*', (c, next) => {
-    const auth = bearerAuth({
-        verifyToken: async (token) => {
-            return token === c.env.API_AUTH_TOKEN
+app.use('/api/tap/repos/*', async (c, next) => {
+    // Check for session cookie (passkey auth)
+    const passkeyId = await requireAuth(c, getCookie)
+    if (passkeyId) {
+        return next()
+    }
+
+    // Fall back to bearer token auth
+    const authHeader = c.req.header('Authorization')
+    if (authHeader?.startsWith('Bearer ')) {
+        const token = authHeader.slice(7)
+        if (token === c.env.API_AUTH_TOKEN) {
+            return next()
         }
-    })
-    return auth(c, next)
+    }
+
+    return c.json({ error: 'Unauthorized' }, 401)
 })
 
 /**

@@ -9,6 +9,49 @@ This is a Cloudflare application
 <!-- toc -->
 </details>
 
+
+-------
+
+
+## Use the Template
+
+This is a template repository. Use the template button in the Github UI,
+then clone and run a few commands on your local machine.
+
+### Dependencies
+
+```sh
+npm i
+```
+
+### Create a D1 Database
+
+```sh
+npx wrangler d1 create taproom-auth
+```
+
+#### Add the ID to `wrangler.jsonc`
+
+Copy the `database_id` value from above, and paste it 
+
+```js
+{
+    // ...
+	"d1_databases": [
+		{
+			"binding": "my_db",
+			"database_name": "my-db",
+			"database_id": "abc123"
+		}
+	],
+    // ...
+}
+```
+
+
+-------
+
+
 ## Develop
 
 Start a local Cloudflare instance via Vite.
@@ -25,13 +68,45 @@ npm run build  # Build for production
 npm run deploy # Build and deploy to Cloudflare
 ```
 
+
+-------
+
+
+
+## Deploy
+
+```sh
+# Run migrations on production
+npx wrangler d1 execute your-database-name --remote --file ./schema.sql
+
+# Deploy the worker
+npx wrangler deploy
+```
+
+
+
+-------
+
+
+
 ## Notes
 
-### Add a D1 database
+### Add database
+
+Create a CF D1 database:
 
 ```sh
 npx wrangler d1 create taproom-auth
 ```
+
+
+Force local or remote DBs in dev mode.
+
+```sh
+wrangler dev --local          # force local SQLite
+wrangler dev --remote         # force remote D1
+```
+
 
 ### A Test DID
 
