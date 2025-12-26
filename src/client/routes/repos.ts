@@ -82,75 +82,93 @@ export const ReposRoute:FunctionComponent<{ state:AppState }> = function ({
         </dl>
 
         <section class="add-repo">
-            <h3>Add a Repo</h3>
-            <p>
-                Add a new DID string to follow.
-            </p>
+            <header>
+                <h3>Add a Repo</h3>
+                <p>Add a new DID string to follow.</p>
+            </header>
 
-            <form onSubmit=${handleAdd}>
-                <div class="input">
-                    <label for="add-did">DID</label>
-                    <input
-                        type="text"
-                        placeholder="did:plc:abc123"
-                        name="did"
-                        id="add-did"
-                        value=${addDid.value}
-                        onInput=${(e:Event) => {
-                            addDid.value = (e.target as HTMLInputElement).value
-                        }}
-                        disabled=${addSubmitting.value}
-                    />
-                </div>
-                <div class="controls">
-                    <${Button}
-                        type="submit"
-                        isSpinning=${addSubmitting}
-                        disabled=${!addDid.value.trim()}
-                    >
-                        ${addSubmitting.value ? 'Adding...' : 'Add'}
-                    <//>
-                </div>
-            </form>
+            <div class="section-grid">
+                <form onSubmit=${handleAdd}>
+                    <div class="input">
+                        <label for="add-did">DID</label>
+                        <input
+                            type="text"
+                            placeholder="did:plc:abc123"
+                            name="did"
+                            id="add-did"
+                            value=${addDid.value}
+                            onInput=${(e:Event) => {
+                                addDid.value = (e.target as HTMLInputElement).value
+                            }}
+                            disabled=${addSubmitting.value}
+                        />
+                    </div>
+                    <div class="controls">
+                        <${Button}
+                            type="submit"
+                            isSpinning=${addSubmitting}
+                            disabled=${!addDid.value.trim()}
+                        >
+                            ${addSubmitting.value ? 'Adding...' : 'Add'}
+                        <//>
+                    </div>
+                </form>
 
-            ${addError.value && html`<p class="error">${addError.value}</p>`}
-            ${addSuccess.value && html`<p class="success">${addSuccess.value}</p>`}
+                <div class="response">
+                    ${addError.value && html`<p class="error">${addError.value}</p>`}
+                    ${addSuccess.value && html`<p class="success">${addSuccess.value}</p>`}
+                    ${!addError.value && !addSuccess.value && html`
+                        <p class="placeholder">-</p>
+                    `}
+                </div>
+            </div>
         </section>
 
         <section class="rm-repo">
-            <h3>Remove a Repo</h3>
-            <p>
-                Remove a DID you are following
-            </p>
+            <header>
+                <h3>Remove a Repo</h3>
+                <p>Remove a DID you are following.</p>
+            </header>
 
-            <form onSubmit=${handleRemove}>
-                <div class="input">
-                    <label for="rm-did">DID</label>
-                    <input
-                        type="text"
-                        placeholder="did:plc:abc123"
-                        name="did"
-                        id="rm-did"
-                        value=${rmDid.value}
-                        onInput=${(e:Event) => {
-                            rmDid.value = (e.target as HTMLInputElement).value
-                        }}
-                        disabled=${rmSubmitting.value}
-                    />
-                </div>
-                <div class="controls">
-                    <${Button}
-                        type="submit"
-                        isSpinning=${rmSubmitting}
-                        disabled=${!rmDid.value.trim()}
-                    >
-                        Remove
-                    <//>
-                </div>
-            </form>
+            <div class="section-grid">
+                <form onSubmit=${handleRemove}>
+                    <div class="input">
+                        <label for="rm-did">DID</label>
+                        <input
+                            type="text"
+                            placeholder="did:plc:abc123"
+                            name="did"
+                            id="rm-did"
+                            value=${rmDid.value}
+                            onInput=${(e:Event) => {
+                                rmDid.value = (e.target as HTMLInputElement).value
+                            }}
+                            disabled=${rmSubmitting.value}
+                        />
+                    </div>
+                    <div class="controls">
+                        <${Button}
+                            type="submit"
+                            isSpinning=${rmSubmitting}
+                            disabled=${!rmDid.value.trim()}
+                        >
+                            Remove
+                        <//>
+                    </div>
+                </form>
 
-            ${rmError.value && html`<p class="error">${rmError.value}</p>`}
-            ${rmSuccess.value && html`<p class="success">${rmSuccess.value}</p>`}
+                <div class="response">
+                    ${rmError.value && html`<p class="error">${rmError.value}</p>`}
+                    ${rmSuccess.value && html`<p class="success">${rmSuccess.value}</p>`}
+                    ${!rmError.value && !rmSuccess.value && html`
+                        <p class="placeholder">-</p>
+                    `}
+                </div>
+            </div>
+        </section>
+
+        <section class="did-resolve">
+            <form></form>
         </section>
     </div>`
 }
