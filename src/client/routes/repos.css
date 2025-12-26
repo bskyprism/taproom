@@ -58,12 +58,31 @@
             font-style: italic;
         }
 
+        & .did-document {
+            margin: 0;
+            padding: 0;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+            overflow-x: auto;
+        }
+
         & .error {
             color: var(--color-error, #d32f2f);
         }
 
         & .success {
             color: var(--color-success, #388e3c);
+        }
+    }
+
+    & .did-resolve {
+        & form {
+            max-width: 30rem;
+        }
+
+        & .response {
+            margin-top: 1.5rem;
         }
     }
 }

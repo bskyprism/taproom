@@ -23,6 +23,12 @@ npm run deploy # Build and deploy to Cloudflare
 
 ## Notes
 
+### A Test DID
+
+```
+did:plc:ftzenmeeq3mzock6ee3hshr3
+```
+
 ### Some Links
 
 * The [tap typescript package](https://github.com/bluesky-social/atproto/tree/main/packages/tap)
