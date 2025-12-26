@@ -4,15 +4,14 @@
         border-bottom: 2px solid;
     }
 
-    & form {
-        margin-bottom: 1rem;
-    }
-    
     & section {
-        padding-bottom: 2rem;
-        max-width: 30rem;
-        margin: 0 auto;
         margin-top: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid;
+
+        &:last-child {
+            border-bottom: none;
+        }
 
         & header {
             margin-bottom: 1rem;
@@ -27,18 +26,39 @@
         }
     }
 
-    & .error-banner {
-        min-height: 8rem;
+    & .section-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        align-items: start;
+
+        & > * {
+            min-width: 0;
+        }
+
+        @media (max-width: 768px) {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
     }
 
     & .response {
-        margin-top: 1.5rem;
         padding: 1rem;
         background: var(--color-bg-muted, #f5f5f5);
-        min-height: 10rem;
+        min-height: 28rem;
+        overflow-x: scroll;
 
         & p {
             margin: 0;
+        }
+
+        & .placeholder {
+            color: var(--color-text-muted, #999);
+            font-style: italic;
+        }
+
+        & .hint {
+            margin-top: 0.5rem;
         }
 
         & pre.did-document {
@@ -46,8 +66,8 @@
             padding: 0;
             font-size: 0.85rem;
             white-space: pre;
-            word-break: break-all;
             overflow-x: scroll;
+            word-break: break-all;
         }
 
         & .error {

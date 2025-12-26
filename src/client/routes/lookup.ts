@@ -36,6 +36,7 @@ export const LookupRoute:FunctionComponent<{ state:AppState }> = function ({
 
     useSignalEffect(() => {
         debug('info resolving', infoResolving.value)
+        debug('data info', state.didInfo.value)
     })
 
     const resolvedInfo = useComputed<null|InfoType>(() => {
@@ -91,42 +92,47 @@ export const LookupRoute:FunctionComponent<{ state:AppState }> = function ({
                 <p>Look up a DID document by its ID string.</p>
             </header>
 
-            <form onSubmit=${handleResolve}>
-                <div class="input">
-                    <label for="resolve-did">DID</label>
-                    <input
-                        type="text"
-                        placeholder="did:plc:abc123"
-                        name="did"
-                        id="resolve-did"
-                        value=${lookupDid.value}
-                        onInput=${(e:InputEvent) => {
-                            lookupDid.value = (e.target as HTMLInputElement).value
-                        }}
-                        disabled=${resolveSubmitting.value}
-                    />
-                </div>
-                <div class="controls">
-                    <${Button}
-                        type="submit"
-                        isSpinning=${resolveSubmitting}
-                        disabled=${!lookupDid.value.trim()}
-                    >
-                        Resolve
-                    <//>
-                </div>
-            </form>
+            <div class="section-grid">
+                <form onSubmit=${handleResolve}>
+                    <div class="input">
+                        <label for="resolve-did">DID</label>
+                        <input
+                            type="text"
+                            placeholder="did:plc:abc123"
+                            name="did"
+                            id="resolve-did"
+                            value=${lookupDid.value}
+                            onInput=${(e:InputEvent) => {
+                                lookupDid.value = (e.target as HTMLInputElement).value
+                            }}
+                            disabled=${resolveSubmitting.value}
+                        />
+                    </div>
+                    <div class="controls">
+                        <${Button}
+                            type="submit"
+                            isSpinning=${resolveSubmitting}
+                            disabled=${!lookupDid.value.trim()}
+                        >
+                            Resolve
+                        <//>
+                    </div>
+                </form>
 
-            ${html`
                 <div class="response${resolveError.value ? ' error' : ''}">
-                    <pre class="did-document">
-                        ${resolveError.value || null}
-                        ${resolvedDid.value &&
-                            JSON.stringify(resolvedDid.value, null, 2)
-                        }
-                    </pre>
+                    ${resolveError.value && html`<p class="error">
+                        ${resolveError.value}
+                    </p>`}
+                    ${resolvedDid.value && html`
+                        <pre class="did-document">
+                            ${JSON.stringify(resolvedDid.value, null, 2)}
+                        </pre>
+                    `}
+                    ${!resolveError.value && !resolvedDid.value && html`
+                        <p class="placeholder">-</p>
+                    `}
                 </div>
-            `}
+            </div>
         </section>
 
         <section class="did-info">
@@ -137,53 +143,50 @@ export const LookupRoute:FunctionComponent<{ state:AppState }> = function ({
                 </p>
             </header>
 
-            <form onSubmit=${getDidInfo}>
-                <div class="input">
-                    <label for="info-did">DID</label>
-                    <input
-                        type="text"
-                        placeholder="did:plc:abc123"
-                        name="did"
-                        id="info-did"
-                        value=${infoDid.value}
-                        onInput=${(e:Event) => {
-                            infoDid.value = (e.target as HTMLInputElement).value
-                        }}
-                        disabled=${infoResolving.value}
-                    />
-                </div>
-                <div class="controls">
-                    <${Button}
-                        type="submit"
-                        isSpinning=${infoResolving}
-                        disabled=${!infoDid.value.trim()}
-                    >
-                        Get Info
-                    <//>
-                </div>
-            </form>
-
-            ${
-                infoError.value ? html`
-                ${infoError.value.toLowerCase().includes('not found') ?
-                    html`<p>
-                        That DID was not found. Is it being followed by your Tap server?
-                    </p>` :
-                    null
-                }
-                <div class="error-banner">
-                    ${infoError.value}
-                </div>` :
-                html`
-                    <div class="response${infoDid.value ? ' error' : ''}">
-                        <pre class="info-document">
-                            ${resolvedInfo.value &&
-                                JSON.stringify(resolvedInfo.value, null, 2)
-                            }
-                        </pre>
+            <div class="section-grid">
+                <form onSubmit=${getDidInfo}>
+                    <div class="input">
+                        <label for="info-did">DID</label>
+                        <input
+                            type="text"
+                            placeholder="did:plc:abc123"
+                            name="did"
+                            id="info-did"
+                            value=${infoDid.value}
+                            onInput=${(e:Event) => {
+                                infoDid.value = (e.target as HTMLInputElement).value
+                            }}
+                            disabled=${infoResolving.value}
+                        />
                     </div>
-                `
-            }
+                    <div class="controls">
+                        <${Button}
+                            type="submit"
+                            isSpinning=${infoResolving}
+                            disabled=${!infoDid.value.trim()}
+                        >
+                            Get Info
+                        <//>
+                    </div>
+                </form>
+
+                <div class="response${infoError.value ? ' error' : ''}">
+                    ${infoError.value && html`
+                        <p class="error">${infoError.value}</p>
+                        ${infoError.value.toLowerCase().includes('not found') && html`
+                            <p class="hint">
+                                Is this DID being followed by your Tap server?
+                            </p>
+                        `}
+                    `}
+                    ${resolvedInfo.value && html`
+                        <pre class="did-document">${JSON.stringify(resolvedInfo.value, null, 2)}</pre>
+                    `}
+                    ${!infoError.value && !resolvedInfo.value && html`
+                        <p class="placeholder">-</p>
+                    `}
+                </div>
+            </div>
         </section>
     </div>`
 }
