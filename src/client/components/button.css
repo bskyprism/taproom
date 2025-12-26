@@ -15,7 +15,7 @@ a.btn, button.btn {
     transition: all 0.2s;
     transform: translateY(1px);
 
-    &:hover {
+    &:hover, &:focus {
         outline: 1px solid;
         transform: translateY(0);
     }

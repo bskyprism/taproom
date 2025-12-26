@@ -25,12 +25,6 @@ export const ReposRoute:FunctionComponent<{ state:AppState }> = function ({
     const rmError = useSignal<string|null>(null)
     const rmSuccess = useSignal<string|null>(null)
 
-    // Resolve form state
-    const resolveDid = useSignal('')
-    const resolveSubmitting = useSignal(false)
-    const resolveError = useSignal<string|null>(null)
-    const resolveResult = useSignal<Record<string, unknown>|null>(null)
-
     const handleAdd = useCallback(async (ev:SubmitEvent) => {
         ev.preventDefault()
         if (!addDid.value.trim()) return
@@ -74,26 +68,6 @@ export const ReposRoute:FunctionComponent<{ state:AppState }> = function ({
             rmError.value = err instanceof Error ? err.message : 'Failed to remove repo'
         } finally {
             rmSubmitting.value = false
-        }
-    }, [])
-
-    const handleResolve = useCallback(async (ev:SubmitEvent) => {
-        ev.preventDefault()
-        if (!resolveDid.value.trim()) return
-
-        resolveSubmitting.value = true
-        resolveError.value = null
-        resolveResult.value = null
-
-        try {
-            const did = encodeURIComponent(resolveDid.value.trim())
-            const data = await ky.get(`/api/tap/resolve/${did}`).json<Record<string, unknown>>()
-            resolveResult.value = data
-        } catch (err) {
-            debug('error resolving did', err)
-            resolveError.value = err instanceof Error ? err.message : 'Failed to resolve DID'
-        } finally {
-            resolveSubmitting.value = false
         }
     }, [])
 
@@ -193,48 +167,5 @@ export const ReposRoute:FunctionComponent<{ state:AppState }> = function ({
             </div>
         </section>
 
-        <section class="did-resolve">
-            <header>
-                <h3>Resolve a DID</h3>
-                <p>Look up a DID document by its ID string.</p>
-            </header>
-
-            <form onSubmit=${handleResolve}>
-                <div class="input">
-                    <label for="resolve-did">DID</label>
-                    <input
-                        type="text"
-                        placeholder="did:plc:abc123"
-                        name="did"
-                        id="resolve-did"
-                        value=${resolveDid.value}
-                        onInput=${(e:Event) => {
-                            resolveDid.value = (e.target as HTMLInputElement).value
-                        }}
-                        disabled=${resolveSubmitting.value}
-                    />
-                </div>
-                <div class="controls">
-                    <${Button}
-                        type="submit"
-                        isSpinning=${resolveSubmitting}
-                        disabled=${!resolveDid.value.trim()}
-                    >
-                        Resolve
-                    <//>
-                </div>
-            </form>
-
-            ${resolveError.value && html`
-                <div class="response error-response">
-                    <p class="error">${resolveError.value}</p>
-                </div>
-            `}
-            ${resolveResult.value && html`
-                <div class="response">
-                    <pre class="did-document">${JSON.stringify(resolveResult.value, null, 2)}</pre>
-                </div>
-            `}
-        </section>
     </div>`
 }

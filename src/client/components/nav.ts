@@ -44,6 +44,9 @@ export const Nav:FunctionComponent<{ state:AppState }> = function Nav ({
             <li>
                 <${NavLink} href="/repos" state=${state}>Repos<//>
             </li>
+            <li>
+                <${NavLink} href="/lookup" state=${state}>Lookup<//>
+            </li>
         </ul>
     </nav>`
 }

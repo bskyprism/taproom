@@ -148,10 +148,17 @@ div.input {
     }
 
     & input {
+        transition: all 0.2s;
         width: 100%;
         border-radius: 0;
         border: 1px solid;
+        outline: 1px solid transparent;
         padding: 0.4rem 0.6rem;
+
+        &:focus {
+            border-radius: 0;
+            outline: 1px solid;
+        }
     }
 }
 
