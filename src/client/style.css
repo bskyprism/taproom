@@ -113,6 +113,12 @@ h1 {
     }
 }
 
+.controls {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
 .stat-value {
     font-size: 1.5rem;
     font-weight: 600;
@@ -133,11 +139,20 @@ h1 {
     margin-bottom: var(--spacing);
 }
 
-.input {
-    flex: 1;
-    padding: 0.5rem;
-    border: 1px solid var(--color-border);
-    font: inherit;
+div.input {
+    display: flex;
+    align-items: center;
+
+    & label {
+        margin-right: 1rem;
+    }
+
+    & input {
+        width: 100%;
+        border-radius: 0;
+        border: 1px solid;
+        padding: 0.4rem 0.6rem;
+    }
 }
 
 .btn {
@@ -145,10 +160,6 @@ h1 {
     border: 1px solid;
     background: white;
     cursor: pointer;
-
-    &:hover {
-        background: #f9fafb;
-    }
 
     &:disabled {
         opacity: 0.5;

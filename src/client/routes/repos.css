@@ -1,0 +1,15 @@
+.route.repos {
+    & h2 {
+        margin-bottom: 1rem;
+        border-bottom: 2px solid;
+    }
+
+    & form {
+        max-width: 30rem;
+        margin-top: 0.5rem;
+    }
+
+    & section {
+        margin-top: 1rem;
+    }
+}
