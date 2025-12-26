@@ -1,10 +1,13 @@
-import { Signal, signal, computed, batch } from '@preact/signals'
+import { type Signal, signal, computed, batch } from '@preact/signals'
 import Route from 'route-event'
 import { type Tap } from '@atproto/tap'
-import ky from 'ky'
+import ky, { type HTTPError } from 'ky'
 import Debug from '@substrate-system/debug'
 import type { TapHealth, TapStats } from '../shared.js'
 const debug = Debug('taproom:state')
+
+export type RequestFor<T, E = HTTPError> = 'resolving'|null|E|T
+export type InfoType = Awaited<ReturnType<Tap['getRepoInfo']>>
 
 export interface AppState {
     route:Signal<string>;
@@ -13,7 +16,7 @@ export interface AppState {
     tapHealth:Signal<TapHealth|null>;
     tapStats:Signal<TapStats|null>;
     loading:Signal<boolean>;
-    didInfo:Signal<null|'resolving'|'error'|Awaited<ReturnType<Tap['getRepoInfo']>>>;
+    didInfo:Signal<RequestFor<Awaited<ReturnType<Tap['getRepoInfo']>>>>;
     error:Signal<string|null>;
     // Derived state
     isConnected:Signal<boolean>;
@@ -29,11 +32,7 @@ export function State ():AppState {
         tapHealth: signal<TapHealth|null>(null),
         tapStats: signal<TapStats|null>(null),
         loading: signal<boolean>(false),
-        didInfo: signal<null|
-            'resolving'|
-            'error'|
-            Awaited<ReturnType<Tap['getRepoInfo']>>
-        >(null),
+        didInfo: signal(null),
         error: signal<string|null>(null),
         // Derived state
         isConnected: computed(() => {
@@ -61,9 +60,20 @@ export function State ():AppState {
 
 State.didInfo = async function (state:AppState, did:string):Promise<void> {
     const urlDid = encodeURIComponent(did.trim())
-    const info = await ky.get(`/api/tap/info/${urlDid}`)
-        .json<ReturnType<Tap['getRepoInfo']>>()
-    state.didInfo.value = info
+
+    try {
+        debug('bbbbbbbbbbbbbbbbb')
+        const info = await ky.get(`/api/tap/info/${urlDid}`)
+        debug('cccccccccccc', info)
+        const infoData = await info.json<ReturnType<Tap['getRepoInfo']>>()
+        debug('aaaaaaaaaaaa')
+        state.didInfo.value = infoData
+    } catch (_err) {
+        const err = _err as HTTPError
+        const errString = await err.response.text()
+        debug('dddddddddddddddddddddddd', errString)
+        state.didInfo.value = err
+    }
 }
 
 /**
@@ -102,7 +112,6 @@ State.FetchStats = async function (state: AppState): Promise<void> {
 
     try {
         const res = await ky.get('/api/tap/stats').json<TapStats>()
-        debug('resssssssss', res)
         state.tapStats.value = res
     } catch (err) {
         state.error.value = err instanceof Error ? err.message : 'Unknown error'

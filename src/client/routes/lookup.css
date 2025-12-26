@@ -3,6 +3,10 @@
         margin-bottom: 1rem;
         border-bottom: 2px solid;
     }
+
+    & form {
+        margin-bottom: 1rem;
+    }
     
     & section {
         padding-bottom: 2rem;
@@ -21,6 +25,10 @@
                 margin: 0;
             }
         }
+    }
+
+    & .error-banner {
+        min-height: 8rem;
     }
 
     & .response {

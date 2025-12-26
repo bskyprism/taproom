@@ -219,7 +219,8 @@ div.input {
     padding: var(--spacing);
     background: #fef2f2;
     color: var(--color-danger);
-    margin-bottom: var(--spacing);
+    margin: var(--spacing) 0;
+    overflow-x: scroll;
 }
 
 .empty-state {

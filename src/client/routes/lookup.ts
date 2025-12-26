@@ -1,11 +1,11 @@
 import { html } from 'htm/preact'
 import { useCallback } from 'preact/hooks'
-import { FunctionComponent } from 'preact'
-import { batch, useSignal } from '@preact/signals'
+import { type FunctionComponent } from 'preact'
+import { batch, useComputed, useSignal } from '@preact/signals'
 import ky from 'ky'
 import Debug from '@substrate-system/debug'
 import { Button } from '../components/button.js'
-import { type AppState } from '../state.js'
+import { type AppState, type InfoType, State } from '../state.js'
 import './lookup.css'
 const debug = Debug('taproom:lookup')
 
@@ -17,9 +17,32 @@ export const LookupRoute:FunctionComponent<{ state:AppState }> = function ({
     const resolveSubmitting = useSignal(false)
     const resolveError = useSignal<string|null>(null)
     const resolvedDid = useSignal<Record<string, unknown>|null>(null)
+    const infoResolving = useComputed(() => {
+        return state.didInfo.value === 'resolving'
+    })
+    const infoError = useComputed<null|Error>(() => {
+        if (!(state.didInfo.value instanceof Error)) {
+            return null
+        }
+
+        return state.didInfo.value
+    })
+
+    const resolvedInfo = useComputed<null|InfoType>(() => {
+        if (
+            state.didInfo.value &&
+            typeof state.didInfo.value !== 'string' &&
+            !(state.didInfo.value instanceof Error)
+        ) {
+            return state.didInfo.value
+        }
+
+        return null
+    })
 
     const getDidInfo = useCallback(async (ev:SubmitEvent) => {
         ev.preventDefault()
+        State.didInfo(state, infoDid.value)
     }, [])
 
     const handleResolve = useCallback(async (ev:SubmitEvent) => {
@@ -99,47 +122,58 @@ export const LookupRoute:FunctionComponent<{ state:AppState }> = function ({
         <section class="did-info">
             <header>
                 <h3>DID Info</h3>
-                <p>Call the <code>/info/:did</code> path on the tap server.</p>
+                <p>
+                    Call the <code>/info/:did</code> path on the tap server.
+                </p>
             </header>
 
             <form onSubmit=${getDidInfo}>
                 <div class="input">
-                    <label for="resolve-did">DID</label>
+                    <label for="info-did">DID</label>
                     <input
                         type="text"
                         placeholder="did:plc:abc123"
                         name="did"
-                        id="resolve-did"
+                        id="info-did"
                         value=${infoDid.value}
                         onInput=${(e:Event) => {
                             infoDid.value = (e.target as HTMLInputElement).value
                         }}
-                        disabled=${resolveSubmitting.value}
+                        disabled=${infoResolving.value}
                     />
                 </div>
                 <div class="controls">
                     <${Button}
                         type="submit"
-                        isSpinning=${resolveSubmitting}
+                        isSpinning=${infoResolving}
                         disabled=${!infoDid.value.trim()}
                     >
-                        Resolve
+                        Get Info
                     <//>
                 </div>
             </form>
 
-            ${html`
-                <div class="response${resolveError.value ? ' error' : ''}">
-                    <pre class="did-document">
-                        ${resolveError.value || null}
-                        ${resolvedDid.value &&
-                            JSON.stringify(resolvedDid.value, null, 2)
-                        }
-                    </pre>
-                </div>
-            `}
+            ${
+                infoError.value ? html`
+                ${infoError.value.message.toLocaleLowerCase().includes('not found') ?
+                    html`<p>
+                        That DID was not found. Is it being followed by your Tap server?
+                    </p>` :
+                    null
+                }
+                <div class="error-banner">
+                    ${infoError.value.message}
+                </div>` :
+                html`
+                    <div class="response${infoDid.value ? ' error' : ''}">
+                        <pre class="info-document">
+                            ${resolvedInfo.value &&
+                                JSON.stringify(resolvedInfo.value, null, 2)
+                            }
+                        </pre>
+                    </div>
+                `
+            }
         </section>
-
-
     </div>`
 }

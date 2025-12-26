@@ -1,4 +1,4 @@
-import { Context, Hono } from 'hono'
+import { type Context, Hono } from 'hono'
 import type { ContentfulStatusCode } from 'hono/utils/http-status'
 import { cors } from 'hono/cors'
 import { Tap, formatAdminAuthHeader } from '@atproto/tap'
@@ -112,10 +112,19 @@ app.get('/api/tap/info/:did', async (c) => {
     try {
         const tap = getTapClient(c)
         const data = await tap.getRepoInfo(c.req.param('did'))
+        console.log('***got data***', data)
         return c.json(data)
-    } catch (err) {
+    } catch (_err) {
+        const err = _err as TapFetchError
         const message = err instanceof Error ? err.message : 'Unknown error'
-        return c.json({ error: message }, 500)
+        console.log('***got error***', message)
+        let status = 500
+        if (message.includes('Not Found')) {
+            status = 404
+            return new Response('Not found.', { status })
+        } else {
+            return new Response(message, { status: 500 })
+        }
     }
 })
 

@@ -1,5 +1,5 @@
 import { html } from 'htm/preact'
-import { FunctionComponent, render } from 'preact'
+import { type FunctionComponent, render } from 'preact'
 import Debug from '@substrate-system/debug'
 import { State } from './state.js'
 import { Nav } from './components/nav.js'
