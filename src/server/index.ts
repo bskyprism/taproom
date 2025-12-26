@@ -1,6 +1,7 @@
 import { type Context, Hono } from 'hono'
 import type { ContentfulStatusCode } from 'hono/utils/http-status'
 import { cors } from 'hono/cors'
+import { bearerAuth } from 'hono/bearer-auth'
 import { Tap, formatAdminAuthHeader } from '@atproto/tap'
 import type {
     TapHealth,
@@ -20,6 +21,19 @@ export type StatsPath =
 const app = new Hono<{ Bindings:Env }>()
 
 app.use('/api/*', cors())
+
+/**
+ * Protect write routes with bearer auth
+ * Token must be provided in Authorization header: Bearer <token>
+ */
+app.use('/api/tap/repos/*', (c, next) => {
+    const auth = bearerAuth({
+        verifyToken: async (token) => {
+            return token === c.env.API_AUTH_TOKEN
+        }
+    })
+    return auth(c, next)
+})
 
 /**
  * Create a Tap client instance for the request
