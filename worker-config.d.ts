@@ -22,6 +22,7 @@ declare namespace Cloudflare {
         // Passkey auth
         PASSKEY_REGISTRATION_SECRET:string;
         taproom_auth:D1Database;
+        AUTH_CHALLENGES:KVNamespace;
     }
 }
 

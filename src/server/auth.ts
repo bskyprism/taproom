@@ -27,22 +27,6 @@ function base64ToUint8Array (base64:string):Uint8Array<ArrayBuffer> {
     return bytes
 }
 
-// export function uint8ArrayToBase64Url (arr:Uint8Array):string {
-//     return btoa(String.fromCharCode(...arr))
-//         .replace(/\+/g, '-')
-//         .replace(/\//g, '_')
-//         .replace(/=+$/, '')
-// }
-
-// export function base64UrlToUint8Array (base64url:string):Uint8Array {
-//     const base64 = base64url
-//         .replace(/-/g, '+')
-//         .replace(/_/g, '/')
-//     const padLen = (4 - base64.length % 4) % 4
-//     const padded = base64 + '='.repeat(padLen)
-//     return base64ToUint8Array(padded)
-// }
-
 // WebAuthn configuration
 // These must match between registration and authentication
 const RP_NAME = 'Taproom'
@@ -63,19 +47,8 @@ function generateId ():string {
 // Session duration: 30 days
 const SESSION_DURATION_MS = 30 * 24 * 60 * 60 * 1000
 
-// Store for challenges (in-memory, but short-lived)
-// In production, you might want to use KV or D1 for this
-const challengeStore = new Map<string, { challenge:string, expires:number }>()
-
-// Clean up expired challenges periodically
-function cleanupChallenges () {
-    const now = Date.now()
-    for (const [key, value] of challengeStore) {
-        if (value.expires < now) {
-            challengeStore.delete(key)
-        }
-    }
-}
+// Challenge TTL: 5 minutes (in seconds for KV)
+const CHALLENGE_TTL_SECONDS = 5 * 60
 
 // Create the auth router
 export function createAuthRouter () {
@@ -141,13 +114,13 @@ export function createAuthRouter () {
             },
         })
 
-        // Store the challenge temporarily
+        // Store the challenge in KV with TTL
         const challengeKey = generateId()
-        challengeStore.set(challengeKey, {
-            challenge: options.challenge,
-            expires: Date.now() + 5 * 60 * 1000, // 5 minutes
-        })
-        cleanupChallenges()
+        await c.env.AUTH_CHALLENGES.put(
+            challengeKey,
+            options.challenge,
+            { expirationTtl: CHALLENGE_TTL_SECONDS }
+        )
 
         return c.json({
             options,
@@ -170,13 +143,13 @@ export function createAuthRouter () {
             return c.json({ error: 'Invalid registration secret' }, 403)
         }
 
-        // Get the stored challenge
-        const stored = challengeStore.get(body.challengeKey)
-        if (!stored || stored.expires < Date.now()) {
-            challengeStore.delete(body.challengeKey)
+        // Get the stored challenge from KV
+        const challenge = await c.env.AUTH_CHALLENGES.get(body.challengeKey)
+        if (!challenge) {
             return c.json({ error: 'Challenge expired or invalid' }, 400)
         }
-        challengeStore.delete(body.challengeKey)
+        // Delete the challenge after retrieval (one-time use)
+        await c.env.AUTH_CHALLENGES.delete(body.challengeKey)
 
         const origin = c.req.header('origin') || `https://${c.req.header('host')}`
         const rpId = getRpId(origin)
@@ -184,7 +157,7 @@ export function createAuthRouter () {
         try {
             const verification = await verifyRegistrationResponse({
                 response: body.response,
-                expectedChallenge: stored.challenge,
+                expectedChallenge: challenge,
                 expectedOrigin: origin,
                 expectedRPID: rpId,
             })
@@ -264,13 +237,13 @@ export function createAuthRouter () {
             userVerification: 'preferred',
         })
 
-        // Store the challenge
+        // Store the challenge in KV with TTL
         const challengeKey = generateId()
-        challengeStore.set(challengeKey, {
-            challenge: options.challenge,
-            expires: Date.now() + 5 * 60 * 1000,
-        })
-        cleanupChallenges()
+        await c.env.AUTH_CHALLENGES.put(
+            challengeKey,
+            options.challenge,
+            { expirationTtl: CHALLENGE_TTL_SECONDS }
+        )
 
         return c.json({
             options,
@@ -287,13 +260,13 @@ export function createAuthRouter () {
             response:AuthenticationResponseJSON,
         }>()
 
-        // Get the stored challenge
-        const stored = challengeStore.get(body.challengeKey)
-        if (!stored || stored.expires < Date.now()) {
-            challengeStore.delete(body.challengeKey)
+        // Get the stored challenge from KV
+        const challenge = await c.env.AUTH_CHALLENGES.get(body.challengeKey)
+        if (!challenge) {
             return c.json({ error: 'Challenge expired or invalid' }, 400)
         }
-        challengeStore.delete(body.challengeKey)
+        // Delete the challenge after retrieval (one-time use)
+        await c.env.AUTH_CHALLENGES.delete(body.challengeKey)
 
         // Find the credential
         const credentialIdBase64 = body.response.id
@@ -318,7 +291,7 @@ export function createAuthRouter () {
         try {
             const verification = await verifyAuthenticationResponse({
                 response: body.response,
-                expectedChallenge: stored.challenge,
+                expectedChallenge: challenge,
                 expectedOrigin: origin,
                 expectedRPID: rpId,
                 credential: {

@@ -10,7 +10,12 @@
 	"compatibility_flags": [
 		"nodejs_compat"
 	],
-	"kv_namespaces": [],
+	"kv_namespaces": [
+		{
+			"binding": "AUTH_CHALLENGES",
+			"id": "0685b57a1afa4bd6a8c5f51e5c40a112"
+		}
+	],
 	"d1_databases": [
 		{
 			"binding": "taproom_auth",

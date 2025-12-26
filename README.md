@@ -52,6 +52,94 @@ Copy the `database_id` value from above, and paste it
 -------
 
 
+
+## Auth
+
+This is designed to use passkeys (`webauthn`) for authentication. Initial
+registration (adding a new passkey) is done via a secret key env variable,
+`REGISTRATION_SECRET`. You need to enter a correct key, then it will let you
+create a new passkey.
+
+
+### Auth Flow
+
+1. **Initial Registration** - Protected by a secret key,`REGISTRATION_SECRET`.
+   Enter the secret to register your device's passkey
+   (fingerprint, Face ID, etc.)
+2. **Authentication** - After registration, click "Login with Passkey" and
+   complete the biometric prompt
+3. **Sessions** - Valid for 30 days, stored as an httpOnly cookie
+4. **Write Protection** - Routes like adding/removing repos require either a
+   valid session or a Bearer token
+
+
+### Initial Setup
+
+Need to create some infrastructure. I'm using Cloudflare.
+
+
+#### 1. Create the KV Namespace
+
+```sh
+npx wrangler kv namespace create "AUTH_CHALLENGES"
+```
+
+Add the returned ID to `wrangler.jsonc`:
+
+```jsonc
+"kv_namespaces": [
+    {
+        "binding": "AUTH_CHALLENGES",
+        "id": "your-id-here"
+    }
+],
+```
+
+#### 2. Run the Database Migration
+
+```sh
+# Local development
+npx wrangler d1 execute taproom-auth --local --file=migrations/0001_passkeys.sql
+
+# Production
+npx wrangler d1 execute taproom-auth --remote --file=migrations/0001_passkeys.sql
+```
+
+#### 3. Create a Secret Value
+
+A convenient way to generate a random key:
+
+```sh
+openssl rand -base64 32
+```
+
+For local development, add to `.dev.vars`:
+
+```
+REGISTRATION_SECRET="your-secret-here"
+```
+
+For production:
+
+```sh
+npx wrangler secret put REGISTRATION_SECRET
+```
+
+### Auth Flow
+
+1. Visit the app - you'll see "Register Passkey" in the header
+2. Enter your registration secret and click "Register Passkey"
+3. Complete the biometric/passkey prompt on your device
+4. You're now authenticated with a 30-day session
+5. Future visits: click "Login with Passkey" to re-authenticate
+
+
+
+
+-------
+
+
+
 ## Develop
 
 Start a local Cloudflare instance via Vite.
@@ -76,11 +164,16 @@ npm run deploy # Build and deploy to Cloudflare
 ## Deploy
 
 ```sh
-# Run migrations on production
-npx wrangler d1 execute your-database-name --remote --file ./schema.sql
+# Run migrations on production (if not already done)
+npx wrangler d1 execute taproom-auth --remote --file=migrations/0001_passkeys.sql
+
+# Set production secrets (if not already done)
+npx wrangler secret put REGISTRATION_SECRET
+npx wrangler secret put TAP_ADMIN_PASSWORD
+npx wrangler secret put API_AUTH_TOKEN
 
 # Deploy the worker
-npx wrangler deploy
+npm run deploy
 ```
 
 
