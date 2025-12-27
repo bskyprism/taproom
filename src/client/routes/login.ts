@@ -153,7 +153,7 @@ export const LoginRoute:FunctionComponent<{ state:AppState }> = function ({
     return html`<div class="route login">
         <h2>Login</h2>
 
-        ${error.value && html`<p class="error-message">${error.value}</p>`}
+        ${error.value && html`<p class="error-banner">${error.value}</p>`}
         ${success.value && html`<p class="success-message">${success.value}</p>`}
 
         ${isRegistered ? html`
