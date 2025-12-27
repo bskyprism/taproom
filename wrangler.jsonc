@@ -12,7 +12,7 @@
 	],
 	"routes": [
 		{
-			"pattern": "taproom.drerings.app/*",
+			"pattern": "taproom.drerings.app",
 			"custom_domain": true
 		}
 	],
