@@ -101,9 +101,10 @@ export function createAuthRouter () {
             userDisplayName: 'Admin',
             attestationType: 'none',
             authenticatorSelection: {
-                residentKey: 'preferred',
+                residentKey: 'required',  // Required for discoverable credentials
                 userVerification: 'preferred',
             },
+            // No excludeCredentials - allow multiple people to register on same device
         })
 
         // Store the challenge in KV with TTL
@@ -216,12 +217,12 @@ export function createAuthRouter () {
      * Start authentication
      */
     auth.post('/authenticate/options', async (c) => {
-        // Get all registered credentials
-        const credentials = await c.env.taproom_auth
-            .prepare('SELECT credential_id, transports FROM passkeys')
-            .all<{ credential_id:string, transports:string }>()
+        // Check if any passkeys exist
+        const count = await c.env.taproom_auth
+            .prepare('SELECT COUNT(*) as count FROM passkeys')
+            .first<{ count:number }>()
 
-        if (!credentials.results || credentials.results.length === 0) {
+        if (!count || count.count === 0) {
             return c.json({ error: 'No passkeys registered' }, 400)
         }
 
@@ -230,10 +231,8 @@ export function createAuthRouter () {
 
         const options = await generateAuthenticationOptions({
             rpID: rpId,
-            allowCredentials: credentials.results.map(cred => ({
-                id: cred.credential_id,  // Already a Base64URLString
-                transports: JSON.parse(cred.transports || '[]') as AuthenticatorTransportFuture[],
-            })),
+            // Empty allowCredentials = browser shows passkey picker for this site
+            allowCredentials: [],
             userVerification: 'preferred',
         })
 

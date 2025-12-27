@@ -1,10 +1,10 @@
 .route.login {
-    & section, & h2 {
+    & section, & h2, & p {
         max-width: 30rem;
         margin: 0 auto;
     }
 
-    & h2 {
+    & h2, & p {
         margin-bottom: 1rem;
     }
 
