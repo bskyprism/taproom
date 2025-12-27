@@ -14,11 +14,15 @@ There are [several env variables](#config) you can use to configure things.
 - [Use the Template](#use-the-template)
   * [Dependencies](#dependencies)
   * [Create a D1 Database](#create-a-d1-database)
+  * [Create a KV Namespace](#create-a-kv-namespace)
+- [Webauthn (passkey) Authentication](#webauthn-passkey-authentication)
+- [Tap](#tap)
 - [Config](#config)
   * [TAP_ADMIN_PASSWORD](#tap_admin_password)
   * [ALLOW_ANON_READS](#allow_anon_reads)
   * [REGISTRATION_SECRET](#registration_secret)
   * [Generate a Secret](#generate-a-secret)
+  * [Frontend Env](#frontend-env)
 - [Auth](#auth)
   * [Auth Flow](#auth-flow)
   * [Initial Setup](#initial-setup)
@@ -74,15 +78,49 @@ Copy the `database_id` value from above, and paste it
 }
 ```
 
+### Create a KV Namespace
+
+This uses the `AUTH_CHALLENGES` KV namespace to store temporary authentication
+challenges during the login flow. See [src/server/auth.ts](./src/server/auth.ts).
+
+```sh
+npx wrangler kv namespace create "AUTH_CHALLENGES"
+```
+
+Then add the returned ID to `wrangler.jsonc`:
+
+```js
+{
+	"kv_namespaces": [
+		{
+			"binding": "AUTH_CHALLENGES",
+			"id": "abc123"
+		}
+	],
+}
+```
 
 ----------
+
+## Webauthn (passkey) Authentication
+
+1. The server generates a random challenge and stores it temporarily in KV
+2. The client signs the challenge with their passkey
+3. The server retrieves the stored challenge to verify the signature
+4. The challenge is deleted to prevent replay attacks
+
+
+
+----------
+
 
 
 ## Tap
 
 You should be running a Tap server also,
 [which you can do with Docker](https://github.com/bluesky-social/indigo/tree/main/cmd/tap#distribution--deployment)
-+ a hosting service like fly.io.
+and a hosting service like fly.io.
+
 
 ----------
 
@@ -225,6 +263,8 @@ Start a local Cloudflare instance via Vite.
 ```sh
 npm start
 ```
+
+
 
 ### Commands
 
