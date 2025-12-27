@@ -14,7 +14,6 @@
 		{
 			"pattern": "taproom.drerings.app",
 			"custom_domain": true,
-			"override_existing_dns_record": true
 		}
 	],
 	"kv_namespaces": [
