@@ -6,7 +6,31 @@ View information about a
 This is a Cloudflare application 
 
 <details><summary><h2>Contents</h2></summary>
+
 <!-- toc -->
+
+- [Use the Template](#use-the-template)
+  * [Dependencies](#dependencies)
+  * [Create a D1 Database](#create-a-d1-database)
+- [Config](#config)
+  * [TAP_ADMIN_PASSWORD](#tap_admin_password)
+  * [ALLOW_ANON_READS](#allow_anon_reads)
+  * [REGISTRATION_SECRET](#registration_secret)
+  * [Generate a Secret](#generate-a-secret)
+- [Auth](#auth)
+  * [Auth Flow](#auth-flow)
+  * [Initial Setup](#initial-setup)
+  * [Auth Flow](#auth-flow-1)
+- [Develop](#develop)
+  * [Commands](#commands)
+- [Deploy](#deploy)
+- [Notes](#notes)
+  * [Add database](#add-database)
+  * [A Test DID](#a-test-did)
+  * [Some Links](#some-links)
+
+<!-- tocstop -->
+
 </details>
 
 
@@ -49,7 +73,49 @@ Copy the `database_id` value from above, and paste it
 ```
 
 
--------
+----------
+
+
+## Config
+
+Some env variables, for `.dev.vars` locally:
+
+```sh
+NODE_ENV="development"
+TAP_SERVER_URL="https://my-server.fly.dev"
+TAP_ADMIN_PASSWORD="abc123"
+ALLOW_ANON_READS="true"
+REGISTRATION_SECRET="abc123"
+```
+
+### TAP_ADMIN_PASSWORD
+
+This is the secret that your tap server expects.
+
+### ALLOW_ANON_READS
+
+The Tap server requires the admin password for all requests. This variable
+determines if the `taproom` server will allow anonymous reads.
+
+### REGISTRATION_SECRET
+
+This is the secret key that you need to enter to create a passkey. Once you
+have created a passkey, subsequent auth can use the passkey.
+
+### Generate a Secret
+
+```sh
+openssl rand -base64 32
+```
+
+### Frontend Env
+
+The frontend code uses a variable `VITE_ALLOW_ANON_READS` in the `.env` file.
+This determines which routes are shown to logged out users.
+
+
+
+----------
 
 
 
