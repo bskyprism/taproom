@@ -1,9 +1,11 @@
 # taproom
 
-Information about a
+Look at information about a
 [tap server](https://github.com/bluesky-social/indigo/blob/main/cmd/tap/README.md).
 
-This is a Cloudflare application 
+This is a Cloudflare application.
+
+There are [several env variables](#config) you can use to configure things.
 
 <details><summary><h2>Contents</h2></summary>
 
@@ -87,7 +89,8 @@ You should be running a Tap server also,
 
 ## Config
 
-Some env variables, for `.dev.vars` locally:
+Add some env variables to `.dev.vars` locally. These should be set on
+Cloudflare (or your platform) as well.
 
 ```sh
 NODE_ENV="development"
@@ -99,16 +102,16 @@ REGISTRATION_SECRET="abc123"
 
 ### TAP_ADMIN_PASSWORD
 
-This is the secret that your tap server expects.
+This is the secret for your tap server.
 
 ### ALLOW_ANON_READS
 
-The Tap server requires the admin password for all requests. This variable
-determines if the `taproom` server will allow anonymous reads.
+The Tap server requires the admin password for all requests. If this variable
+is set, then read operations do not require any auth.
 
 ### REGISTRATION_SECRET
 
-This is the secret key that you need to enter to create a passkey. Once you
+This is the secret key that you need in order to create a passkey. Once you
 have created a passkey, subsequent auth can use the passkey.
 
 ### Generate a Secret
@@ -131,8 +134,8 @@ This determines which routes are shown to logged out users.
 ## Auth
 
 This is designed to use passkeys (`webauthn`) for authentication. Initial
-registration (adding a new passkey) is done via a secret key env variable,
-`REGISTRATION_SECRET`. You need to enter a correct key, then it will let you
+registration (adding a new passkey) requires a secret key,
+`REGISTRATION_SECRET`. You need to enter the correct key, then it will let you
 create a new passkey.
 
 
