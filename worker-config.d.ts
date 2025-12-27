@@ -20,7 +20,7 @@ declare namespace Cloudflare {
         TAP_ADMIN_PASSWORD:string;
         API_AUTH_TOKEN:string;
         // Passkey auth
-        PASSKEY_REGISTRATION_SECRET:string;
+        REGISTRATION_SECRET:string;
         taproom_auth:D1Database;
         AUTH_CHALLENGES:KVNamespace;
     }

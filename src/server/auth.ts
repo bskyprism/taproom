@@ -67,7 +67,8 @@ export function createAuthRouter () {
 
         if (sessionId) {
             const session = await c.env.taproom_auth
-                .prepare('SELECT id FROM sessions WHERE id = ? AND expires_at > datetime("now")')
+                .prepare('SELECT id FROM sessions WHERE id = ? ' +
+                    'AND expires_at > datetime("now")')
                 .bind(sessionId)
                 .first()
             authenticated = !!session
@@ -86,7 +87,7 @@ export function createAuthRouter () {
         const body = await c.req.json<{ secret:string }>()
 
         // Verify the registration secret
-        if (body.secret !== c.env.PASSKEY_REGISTRATION_SECRET) {
+        if (body.secret !== c.env.REGISTRATION_SECRET) {
             return c.json({ error: 'Invalid registration secret' }, 403)
         }
 
@@ -139,7 +140,7 @@ export function createAuthRouter () {
         }>()
 
         // Verify the secret again
-        if (body.secret !== c.env.PASSKEY_REGISTRATION_SECRET) {
+        if (body.secret !== c.env.REGISTRATION_SECRET) {
             return c.json({ error: 'Invalid registration secret' }, 403)
         }
 
@@ -174,7 +175,15 @@ export function createAuthRouter () {
             // credential.publicKey is Uint8Array, needs encoding
             const passkeyId = generateId()
             await c.env.taproom_auth.prepare(`
-                INSERT INTO passkeys (id, credential_id, public_key, counter, device_type, backed_up, transports)
+                INSERT INTO passkeys (
+                    id,
+                    credential_id,
+                    public_key,
+                    counter,
+                    device_type,
+                    backed_up,
+                    transports
+                )
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             `).bind(
                 passkeyId,

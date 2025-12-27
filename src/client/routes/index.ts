@@ -2,6 +2,7 @@ import Router from '@substrate-system/routes'
 import { HomeRoute } from './home.js'
 import { ReposRoute } from './repos.js'
 import { LookupRoute } from './lookup.js'
+import { LoginRoute } from './login.js'
 
 export default function _Router () {
     const router = new Router()
@@ -16,6 +17,10 @@ export default function _Router () {
 
     router.addRoute('/lookup', () => {
         return LookupRoute
+    })
+
+    router.addRoute('/login', () => {
+        return LoginRoute
     })
 
     return router

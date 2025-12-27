@@ -1,0 +1,10 @@
+.route.login {
+    & .register-section {
+        max-width: 30rem;
+        margin: 0 auto;
+
+        & header {
+            margin-bottom: 1rem;
+        }
+    }
+}
