@@ -14,6 +14,13 @@ export interface AuthStatus {
     authenticated:boolean;
 }
 
+const AUTH_ROUTES:string[] = ([
+    '/repos',
+    import.meta.env.VITE_ALLOW_ANON_READS ? null : ['/', '/lookup']
+]).filter(Boolean).flat()
+
+debug('auth routes', AUTH_ROUTES)
+
 export interface AppState {
     route:Signal<string>;
     _setRoute:(path:string)=>void;
@@ -57,7 +64,11 @@ export function State ():AppState {
 
     State.init(state)
 
-    onRoute((path: string, data) => {
+    onRoute((path:string, data) => {
+        if (AUTH_ROUTES.includes(path) && !state.isAuthenticated.value) {
+            return state._setRoute('/login')
+        }
+
         state.route.value = path
         if (data.popstate) {
             return window.scrollTo(data.scrollX, data.scrollY)

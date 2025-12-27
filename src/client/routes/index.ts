@@ -3,6 +3,8 @@ import { HomeRoute } from './home.js'
 import { ReposRoute } from './repos.js'
 import { LookupRoute } from './lookup.js'
 import { LoginRoute } from './login.js'
+// import Debug from '@substrate-system/debug'
+// const debug = Debug('taproom:view')
 
 export default function _Router () {
     const router = new Router()

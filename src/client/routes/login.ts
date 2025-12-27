@@ -36,7 +36,6 @@ export const LoginRoute:FunctionComponent<{ state:AppState }> = function ({
         success.value = null
 
         try {
-            debug('trying this...', secret.value)
             const optionsRes = await ky.post('/api/auth/register/options', {
                 json: { secret: secret.value.trim() }
             }).json<{
@@ -44,13 +43,9 @@ export const LoginRoute:FunctionComponent<{ state:AppState }> = function ({
                 challengeKey:string;
             }>()
 
-            debug('got registration options', optionsRes)
-
             const credential = await startRegistration({
                 optionsJSON: optionsRes.options,
             })
-
-            debug('got credential', credential)
 
             await ky.post('/api/auth/register/verify', {
                 json: {
@@ -60,7 +55,6 @@ export const LoginRoute:FunctionComponent<{ state:AppState }> = function ({
                 }
             })
 
-            debug('registration complete')
             secret.value = ''
             success.value = 'Passkey registered successfully!'
             await State.FetchAuthStatus(state)
@@ -163,7 +157,7 @@ export const LoginRoute:FunctionComponent<{ state:AppState }> = function ({
         ${success.value && html`<p class="success-message">${success.value}</p>`}
 
         ${isRegistered ? html`
-            <section class="login-section">
+            <section class="login">
                 <header>
                     <h3>Login with Passkey</h3>
                     <p>Use your registered passkey to authenticate.</p>

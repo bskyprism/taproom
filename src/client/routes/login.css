@@ -7,4 +7,13 @@
             margin-bottom: 1rem;
         }
     }
+
+    & section, & h2 {
+        max-width: 30rem;
+        margin: 0 auto;
+    }
+
+    & h2 {
+        margin-bottom: 1rem;
+    }
 }
