@@ -157,7 +157,7 @@ export const LoginRoute:FunctionComponent<{ state:AppState }> = function ({
         ${success.value && html`<p class="success-message">${success.value}</p>`}
 
         ${isRegistered ? html`
-            <section class="login">
+            <section class="login-section">
                 <header>
                     <h3>Login with Passkey</h3>
                     <p>Use your registered passkey to authenticate.</p>
@@ -170,6 +170,39 @@ export const LoginRoute:FunctionComponent<{ state:AppState }> = function ({
                             isSpinning=${submitting}
                         >
                             Login with Passkey
+                        <//>
+                    </div>
+                </form>
+            </section>
+
+            <section class="add-passkey-section">
+                <header>
+                    <h3>Add Another Passkey</h3>
+                    <p>Register an additional device or passkey.</p>
+                </header>
+
+                <form onSubmit=${handleRegister}>
+                    <div class="input">
+                        <label for="secret">Registration Secret</label>
+                        <input
+                            type="password"
+                            id="secret"
+                            name="secret"
+                            placeholder="abc123..."
+                            value=${secret.value}
+                            onInput=${(e:Event) => {
+                                secret.value = (e.target as HTMLInputElement).value
+                            }}
+                            disabled=${submitting.value}
+                        />
+                    </div>
+                    <div class="controls">
+                        <${Button}
+                            type="submit"
+                            isSpinning=${submitting}
+                            disabled=${!secret.value.trim()}
+                        >
+                            Add Passkey
                         <//>
                     </div>
                 </form>

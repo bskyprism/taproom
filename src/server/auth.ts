@@ -91,15 +91,6 @@ export function createAuthRouter () {
             return c.json({ error: 'Invalid registration secret' }, 403)
         }
 
-        // Check if already registered (only allow one passkey for simplicity)
-        const existing = await c.env.taproom_auth
-            .prepare('SELECT COUNT(*) as count FROM passkeys')
-            .first<{ count:number }>()
-
-        if (existing && existing.count > 0) {
-            return c.json({ error: 'A passkey is already registered' }, 400)
-        }
-
         const origin = c.req.header('origin') || `https://${c.req.header('host')}`
         const rpId = getRpId(origin)
 
