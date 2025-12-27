@@ -1,6 +1,6 @@
 # taproom
 
-View information about a
+Information about a
 [tap server](https://github.com/bluesky-social/indigo/blob/main/cmd/tap/README.md).
 
 This is a Cloudflare application 
@@ -72,6 +72,15 @@ Copy the `database_id` value from above, and paste it
 }
 ```
 
+
+----------
+
+
+## Tap
+
+You should be running a Tap server also,
+[which you can do with Docker](https://github.com/bluesky-social/indigo/tree/main/cmd/tap#distribution--deployment)
++ a hosting service like fly.io.
 
 ----------
 
