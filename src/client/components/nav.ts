@@ -1,6 +1,6 @@
 import { type FunctionComponent } from 'preact'
 import { html } from 'htm/preact'
-import { type AppState } from '../state.js'
+import { type AppState, AUTH_ROUTES } from '../state.js'
 import './nav.css'
 import { useComputed } from '@preact/signals'
 
@@ -23,6 +23,12 @@ export const NavLink:FunctionComponent<NavLinkProps> = function ({
     >${children}</a>`
 }
 
+const NAV_ITEMS = [
+    { href: '/', label: 'Dashboard' },
+    { href: '/repos', label: 'Repos' },
+    { href: '/lookup', label: 'Lookup' },
+]
+
 export const Nav:FunctionComponent<{ state:AppState }> = function Nav ({
     state
 }) {
@@ -32,15 +38,15 @@ export const Nav:FunctionComponent<{ state:AppState }> = function Nav ({
 
     return html`<nav class="sidebar">
         <ul class="nav-list">
-            <li>
-                <${NavLink} href="/" state=${state}>Dashboard<//>
-            </li>
-            <li>
-                <${NavLink} href="/repos" state=${state}>Repos<//>
-            </li>
-            <li>
-                <${NavLink} href="/lookup" state=${state}>Lookup<//>
-            </li>
+            ${NAV_ITEMS.map(item => {
+                // Hide auth-required routes when not logged in
+                if (!isLoggedIn.value && AUTH_ROUTES.includes(item.href)) {
+                    return null
+                }
+                return html`<li key=${item.href}>
+                    <${NavLink} href=${item.href} state=${state}>${item.label}<//>
+                </li>`
+            })}
             ${!isLoggedIn.value ?
                 html`<li>
                     <${NavLink} href="/login" state=${state}>Login<//>

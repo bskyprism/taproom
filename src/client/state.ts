@@ -14,7 +14,7 @@ export interface AuthStatus {
     authenticated:boolean;
 }
 
-const AUTH_ROUTES:string[] = ([
+export const AUTH_ROUTES:string[] = ([
     '/repos',
     import.meta.env.VITE_ALLOW_ANON_READS ? null : ['/', '/lookup']
 ]).filter(Boolean).flat()
