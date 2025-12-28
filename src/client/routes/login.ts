@@ -142,8 +142,7 @@ export const LoginRoute:FunctionComponent<{ state:AppState }> = function ({
         return html`<div class="route login">
             <h2>Login</h2>
             <p class="already-authenticated">
-                You are already logged in.
-                <a href="/">Go to Dashboard</a>
+                You are already logged in. <a href="/">Go to Dashboard</a>
             </p>
         </div>`
     }

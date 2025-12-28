@@ -1,7 +1,10 @@
 .route.colophon {
-    /* & h2 {
-        margin-bottom: 2rem;
-    } */
+    max-width: 40rem;
+    margin: 0 auto;
+
+    & h2 {
+        margin-top: 2rem;
+    }
 
     & p {
         margin-bottom: 1rem;

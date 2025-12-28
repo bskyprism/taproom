@@ -7,7 +7,7 @@
     --color-error: #dc2626;
     --color-success: #16a34a;
     --color-success-bg: #dcfce7;
-    --color-muted: #6b7280;
+    --color-muted: #5d6370;
     --color-border: #b3b3b3;
     --color-text-secondary: #6b7280;
     --color-bg-secondary: #f3f4f6;
@@ -15,10 +15,17 @@
     --min: 20ch;
 }
 
+.route {
+    min-height: 100vh;
+}
+
+code {
+    font-size: 1rem;
+}
+
 a {
     transition: all 0.4s;
     text-decoration-thickness: 1px;
-    color: inherit;
     text-underline-offset: 1px;
 
 
@@ -81,10 +88,15 @@ dl {
     }
 }
 
+p {
+    line-height: calc(6px + 2.4ex);
+}
+
 .app {
     max-width: 55rem;
     margin: 0 auto;
     padding: var(--spacing);
+    min-height: 100vh;
 }
 
 /* Navigation */
