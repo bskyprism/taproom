@@ -298,6 +298,23 @@ npm run deploy
 
 -------
 
+## Test
+
+### Unit Tests
+
+```sh
+npm test
+```
+
+### E2E Tests
+
+```sh
+npm run test:e2e
+```
+
+
+-------
+
 
 
 ## Notes

@@ -1,6 +1,7 @@
 import { html } from 'htm/preact'
 import type { FunctionComponent } from 'preact'
 import { Button } from '../components/button.js'
+import { ErrorBanner } from '../components/error-banner.js'
 import type { AppState } from '../state.js'
 import { numberToString } from '../util.js'
 import { State } from '../state.js'
@@ -31,7 +32,7 @@ export const HomeRoute:FunctionComponent<{ state:AppState }> = function ({
             <//>
         </header>
 
-        ${error && html`<div class="error-banner">${error}</div>`}
+        <${ErrorBanner} message=${error} />
 
         <div class="stats-grid">
             <div class="stat-card">

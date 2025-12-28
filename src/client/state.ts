@@ -4,6 +4,7 @@ import { type Tap } from '@atproto/tap'
 import ky, { type HTTPError } from 'ky'
 import Debug from '@substrate-system/debug'
 import type { TapHealth, TapStats } from '../shared.js'
+import { parseHttpError } from './util.js'
 const debug = Debug('taproom:state')
 
 export type RequestFor<T, E = Error> = 'resolving'|null|E|T
@@ -112,7 +113,7 @@ State.FetchHealth = async function (state:AppState):Promise<void> {
         state.tapHealth.value = data
         debug('fetched health', data)
     } catch (err) {
-        const message = err instanceof Error ? err.message : 'Unknown error'
+        const message = await parseHttpError(err)
         debug('health failure', err)
         batch(() => {
             state.error.value = message
@@ -136,7 +137,7 @@ State.FetchStats = async function (state: AppState): Promise<void> {
         const res = await ky.get('/api/tap/stats').json<TapStats>()
         state.tapStats.value = res
     } catch (err) {
-        state.error.value = err instanceof Error ? err.message : 'Unknown error'
+        state.error.value = await parseHttpError(err)
     } finally {
         state.loading.value = false
     }

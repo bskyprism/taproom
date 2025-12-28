@@ -1,5 +1,4 @@
-import { test } from '@substrate-system/tapzero'
+// import { test } from '@substrate-system/tapzero'
 
-test('example', async t => {
-    t.ok('ok', 'should be an example')
-})
+// Import all test files
+import './error-parsing.test.js'

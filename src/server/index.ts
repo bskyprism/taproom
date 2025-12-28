@@ -46,7 +46,7 @@ app.use('/api/tap/repos/*', async (c, next) => {
         }
     }
 
-    return c.json({ error: 'Unauthorized' }, 401)
+    return c.text('Unauthorized', 401)
 })
 
 /**
@@ -92,7 +92,7 @@ app.get('/api/tap/health', async (c) => {
             500
         const message = err instanceof Error ? err.message : 'Unknown error'
 
-        return c.json({ error: message }, status)
+        return c.text(message, status)
     }
 })
 
@@ -111,7 +111,7 @@ app.get('/api/tap/stats', async (c) => {
             err.status :
             500
         const message = err instanceof Error ? err.message : 'Unknown error'
-        return c.json({ error: message }, status)
+        return c.text(message, status)
     }
 })
 
@@ -129,7 +129,7 @@ app.get('/api/tap/stats/:type', async (c) => {
     } catch (err) {
         const status:ContentfulStatusCode = err instanceof TapFetchError ? err.status : 500
         const message = err instanceof Error ? err.message : 'Unknown error'
-        return c.json({ error: message }, status)
+        return c.text(message, status)
     }
 })
 
@@ -166,7 +166,7 @@ app.get('/api/tap/resolve/:did', async (c) => {
         return c.json(data)
     } catch (err) {
         const message = err instanceof Error ? err.message : 'Unknown error'
-        return c.json({ error: message }, 500)
+        return c.text(message, 500)
     }
 })
 
@@ -181,7 +181,7 @@ app.post('/api/tap/repos/add', async (c) => {
         return c.body(null, 204)
     } catch (err) {
         const message = err instanceof Error ? err.message : 'Unknown error'
-        return c.json({ error: message }, 500)
+        return c.text(message, 500)
     }
 })
 
@@ -196,7 +196,7 @@ app.post('/api/tap/repos/remove', async (c) => {
         return c.body(null, 204)
     } catch (err) {
         const message = err instanceof Error ? err.message : 'Unknown error'
-        return c.json({ error: message }, 500)
+        return c.text(message, 500)
     }
 })
 
@@ -223,6 +223,23 @@ class TapFetchError extends Error {
 }
 
 /**
+ * Parse an error response body and extract a human-readable message.
+ * Handles JSON responses with 'message' or 'error' fields, or plain text.
+ */
+function parseErrorBody (text: string): string {
+    if (!text) return 'Unknown error'
+
+    try {
+        const json = JSON.parse(text)
+        // Prefer 'message' over 'error' for more descriptive messages
+        return json.message || json.error || text
+    } catch {
+        // Not JSON, return as-is
+        return text
+    }
+}
+
+/**
  * Helper - returns data directly or throws TapFetchError
  */
 async function tapFetch<T> (
@@ -240,7 +257,8 @@ async function tapFetch<T> (
 
     if (!res.ok) {
         const text = await res.text()
-        throw new TapFetchError(text || res.statusText, res.status)
+        const message = parseErrorBody(text) || res.statusText
+        throw new TapFetchError(message, res.status)
     }
 
     return await res.json() as T
