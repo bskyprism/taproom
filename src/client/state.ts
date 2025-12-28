@@ -20,8 +20,6 @@ export const AUTH_ROUTES:string[] = ([
     import.meta.env.VITE_ALLOW_ANON_READS ? null : ['/', '/lookup']
 ]).filter(Boolean).flat()
 
-debug('auth routes', AUTH_ROUTES)
-
 export interface AppState {
     route:Signal<string>;
     _setRoute:(path:string)=>void;

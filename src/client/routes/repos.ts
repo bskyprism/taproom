@@ -40,6 +40,7 @@ export const ReposRoute:FunctionComponent<{ state:AppState }> = function ({
             batch(() => {
                 addSuccess.value = `Added ${addDid.value}`
                 addDid.value = ''
+                addSubmitting.value = false
             })
 
             // and update the stats

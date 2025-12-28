@@ -51,15 +51,6 @@ app.use('/api/tap/repos/*', async (c, next) => {
 })
 
 /**
- * Create a Tap client instance for the request
- */
-function getTapClient (c:Context<{ Bindings:Env }>):Tap {
-    return new Tap(c.env.TAP_SERVER_URL, {
-        adminPassword: c.env.TAP_ADMIN_PASSWORD
-    })
-}
-
-/**
  * Health check for this server
  */
 app.get('/api/health', (c) => {
@@ -217,6 +208,7 @@ app.post('/api/tap/repos/add', async (c) => {
         return c.body(null, 204)
     } catch (err) {
         const message = err instanceof Error ? err.message : 'Unknown error'
+        console.error('**err**', (err as Error).message)
         return c.text(message, 500)
     }
 })
@@ -322,4 +314,13 @@ async function fetchStats (tapUrl:string, pw:string):Promise<TapStats> {
             listRepos: cursors.list_repos
         }
     }
+}
+
+/**
+ * Create a Tap client instance.
+ */
+function getTapClient (c:Context<{ Bindings:Env }>):Tap {
+    return new Tap(c.env.TAP_SERVER_URL, {
+        adminPassword: c.env.TAP_ADMIN_PASSWORD
+    })
 }
