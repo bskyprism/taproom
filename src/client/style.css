@@ -118,6 +118,7 @@ h1 {
     padding: var(--spacing);
     border: 1px solid;
     min-height: 15rem;
+    overflow: scroll;
 
     & h3 {
         border-bottom: 1px solid;
