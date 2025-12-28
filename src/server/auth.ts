@@ -11,21 +11,7 @@ import type {
     AuthenticationResponseJSON,
     AuthenticatorTransportFuture,
 } from '@simplewebauthn/server'
-
-// Base64 utilities for Workers (no Buffer)
-function uint8ArrayToBase64 (arr:Uint8Array):string {
-    return btoa(String.fromCharCode(...arr))
-}
-
-function base64ToUint8Array (base64:string):Uint8Array<ArrayBuffer> {
-    const binary = atob(base64)
-    const buffer = new ArrayBuffer(binary.length)
-    const bytes = new Uint8Array(buffer)
-    for (let i = 0; i < binary.length; i++) {
-        bytes[i] = binary.charCodeAt(i)
-    }
-    return bytes
-}
+import { base64ToUint8Array, uint8ArrayToBase64 } from '../util'
 
 // WebAuthn configuration
 // These must match between registration and authentication
