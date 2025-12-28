@@ -335,6 +335,11 @@ wrangler dev --local          # force local SQLite
 wrangler dev --remote         # force remote D1
 ```
 
+### Database Migration
+
+```sh
+npx wrangler d1 execute taproom-auth --remote --command="$(cat migrations/0001_passkeys.sql)"
+```
 
 ### A Test DID
 
