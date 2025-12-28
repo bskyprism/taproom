@@ -36,8 +36,8 @@
 		"run_worker_first": true
 	},
 	"vars": {
-		"NODE_ENV": "development",
-		"TAP_SERVER_URL": "http://localhost:7374"
+		"NODE_ENV": "staging",
+		"TAP_SERVER_URL": "https://tap.drerings.app"
 	},
 	"observability": {
 		"enabled": true
