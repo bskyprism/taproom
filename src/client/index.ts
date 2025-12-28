@@ -2,6 +2,7 @@ import { html } from 'htm/preact'
 import { type FunctionComponent, render } from 'preact'
 // import Debug from '@substrate-system/debug'
 import { State } from './state.js'
+import { COPYRIGHT, NBSP } from './constants.js'
 import { Nav } from './components/nav.js'
 import { Auth } from './components/auth.js'
 import Router from './routes/index.js'
@@ -53,6 +54,21 @@ export const Taproom:FunctionComponent = function () {
         <main class="main-content">
             <${ChildNode} state=${state} />
         </main>
+
+        <footer>
+            <p>
+                <span>${COPYRIGHT}</span> 2025${NBSP}
+                <a target="_blank" href="https://nichoth.com/">
+                    <code>nichoth</code>
+                </a>
+            </p>
+
+            <p>
+                <a target="_blank" href="https://github.com/bskyprism/taproom">
+                    source code
+                </a>
+            </p>
+        </footer>
     </div>`
 }
 

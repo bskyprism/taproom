@@ -22,6 +22,7 @@ export type StatsPath =
 const app = new Hono<{ Bindings:Env }>()
 
 app.use('/api/*', cors())
+app.use('/resolve/*', cors())
 
 // Mount auth routes
 app.route('/api/auth', createAuthRouter())
@@ -70,6 +71,41 @@ app.get('/api/health', (c) => {
 
 app.get('/health', (c) => {
     return c.json({ status: 'ok' })
+})
+
+/**
+ * Resolve a Bluesky handle to a DID
+ */
+app.get('/resolve/handle/:handle', async (c) => {
+    const handle = c.req.param('handle').replace(/^@/, '')
+    try {
+        const res = await fetch(
+            `https://bsky.social/xrpc/com.atproto.identity.resolveHandle?handle=${encodeURIComponent(handle)}`
+        )
+        if (!res.ok) {
+            const text = await res.text()
+            return c.text(parseErrorBody(text) || 'Handle not found', res.status as ContentfulStatusCode)
+        }
+        const data = await res.json()
+        return c.json(data)
+    } catch (err) {
+        const message = err instanceof Error ? err.message : 'Unknown error'
+        return c.text(message, 500)
+    }
+})
+
+/**
+ * Resolve a DID to its DID document
+ */
+app.get('/resolve/did/:did', async (c) => {
+    try {
+        const tap = getTapClient(c)
+        const data = await tap.resolveDid(c.req.param('did'))
+        return c.json(data)
+    } catch (err) {
+        const message = err instanceof Error ? err.message : 'Unknown error'
+        return c.text(message, 500)
+    }
 })
 
 /**

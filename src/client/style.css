@@ -1,4 +1,5 @@
 @import url("../../node_modules/@substrate-system/css-normalize/dist/index.css");
+@import url("../../node_modules/@substrate-system/icons/dist/style.css");
 
 :root {
     --color-primary: #2563eb;
@@ -12,6 +13,30 @@
     --color-bg-secondary: #f3f4f6;
     --spacing: 1rem;
     --min: 20ch;
+}
+
+a {
+    transition: all 0.4s;
+    text-decoration-thickness: 1px;
+    color: inherit;
+    text-underline-offset: 1px;
+
+
+    &:hover {
+        text-underline-offset: 2px;
+    }
+
+    &.active {
+        /* font-weight: 600; */
+        text-decoration-thickness: 2px;
+        text-underline-offset: 4px;
+    }
+}
+
+github-logo {
+    width: 2rem;
+    height: 2rem;
+    display: inline-block;
 }
 
 * {
@@ -112,6 +137,14 @@ h1 {
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 26ch), 1fr));
     gap: var(--spacing);
     margin-bottom: var(--spacing);
+}
+
+footer {
+    padding-top: 4rem;
+    border-top: 1px solid;
+    margin: 4rem 0;
+    display: flex;
+    justify-content: space-around
 }
 
 .stat-card {

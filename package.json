@@ -24,6 +24,7 @@
     "@simplewebauthn/browser": "^13.2.2",
     "@simplewebauthn/server": "^13.2.2",
     "@substrate-system/css-normalize": "^0.0.13",
+    "@substrate-system/icons": "^0.1.29",
     "@substrate-system/routes": "^5.0.0",
     "htm": "^3.1.1",
     "ky": "^1.14.1",

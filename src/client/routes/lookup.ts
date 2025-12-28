@@ -53,12 +53,40 @@ export const LookupRoute:FunctionComponent<{ state:AppState }> = function ({
 
     const getDidInfo = useCallback(async (ev:SubmitEvent) => {
         ev.preventDefault()
-        State.didInfo(state, infoDid.value)
+        const input = infoDid.value.trim()
+        if (!input) return
+
+        let did: string
+
+        // Check if input is a DID or a handle
+        if (input.startsWith('did:')) {
+            did = input
+        } else {
+            // Resolve handle to DID first
+            try {
+                const handle = input.replace(/^@/, '')
+                const handleRes = await ky.get(`/resolve/handle/${encodeURIComponent(handle)}`)
+                    .json<{ did: string }>()
+                did = handleRes.did
+            } catch (err) {
+                debug('error resolving handle', err)
+                // Set error state - the State.didInfo will show the error
+                state.didInfo.value = err instanceof HTTPError ? err : new HTTPError(
+                    new Response('Handle not found', { status: 404 }),
+                    new Request(''),
+                    { method: 'GET' } as any
+                )
+                return
+            }
+        }
+
+        State.didInfo(state, did)
     }, [])
 
     const handleResolve = useCallback(async (ev:SubmitEvent) => {
         ev.preventDefault()
-        if (!lookupDid.value.trim()) return
+        const input = lookupDid.value.trim()
+        if (!input) return
 
         batch(() => {
             resolveSubmitting.value = true
@@ -66,21 +94,32 @@ export const LookupRoute:FunctionComponent<{ state:AppState }> = function ({
             resolvedDid.value = null
         })
 
-        batch(async () => {
-            try {
-                const did = encodeURIComponent(lookupDid.value.trim())
-                const data = await ky.get(`/api/tap/resolve/${did}`)
-                    .json<Record<string, unknown>>()
-                resolvedDid.value = data
-            } catch (err) {
-                debug('error resolving did', err)
-                resolveError.value = err instanceof Error ?
-                    err.message :
-                    'Failed to resolve DID'
-            } finally {
-                resolveSubmitting.value = false
+        try {
+            let did: string
+
+            // Check if input is a DID or a handle
+            if (input.startsWith('did:')) {
+                did = input
+            } else {
+                // Resolve handle to DID
+                const handle = input.replace(/^@/, '')
+                const handleRes = await ky.get(`/resolve/handle/${encodeURIComponent(handle)}`)
+                    .json<{ did: string }>()
+                did = handleRes.did
             }
-        })
+
+            // Now resolve the DID document
+            const data = await ky.get(`/resolve/did/${encodeURIComponent(did)}`)
+                .json<Record<string, unknown>>()
+            resolvedDid.value = data
+        } catch (err) {
+            debug('error resolving', err)
+            resolveError.value = err instanceof Error ?
+                err.message :
+                'Failed to resolve'
+        } finally {
+            resolveSubmitting.value = false
+        }
     }, [])
 
     return html`<div class="route lookup">
@@ -88,17 +127,17 @@ export const LookupRoute:FunctionComponent<{ state:AppState }> = function ({
 
         <section class="did-resolve">
             <header>
-                <h3>Resolve a DID</h3>
-                <p>Look up a DID document by its ID string.</p>
+                <h3>Resolve</h3>
+                <p>Look up a DID document by DID or Bluesky handle.</p>
             </header>
 
             <div class="section-grid">
                 <form onSubmit=${handleResolve}>
                     <div class="input">
-                        <label for="resolve-did">DID</label>
+                        <label for="resolve-did">DID or Handle</label>
                         <input
                             type="text"
-                            placeholder="did:plc:abc123"
+                            placeholder="did:plc:abc123 or alice.bsky.social"
                             name="did"
                             id="resolve-did"
                             value=${lookupDid.value}
@@ -137,19 +176,19 @@ export const LookupRoute:FunctionComponent<{ state:AppState }> = function ({
 
         <section class="did-info">
             <header>
-                <h3>DID Info</h3>
+                <h3>Repo Info</h3>
                 <p>
-                    Call the <code>/info/:did</code> path on the tap server.
+                    Get repo info from the tap server by DID or handle.
                 </p>
             </header>
 
             <div class="section-grid">
                 <form onSubmit=${getDidInfo}>
                     <div class="input">
-                        <label for="info-did">DID</label>
+                        <label for="info-did">DID or Handle</label>
                         <input
                             type="text"
-                            placeholder="did:plc:abc123"
+                            placeholder="did:plc:abc123 or alice.bsky.social"
                             name="did"
                             id="info-did"
                             value=${infoDid.value}
