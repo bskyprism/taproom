@@ -31,6 +31,8 @@ export interface AppState {
     tapStats:Signal<TapStats|null>;
     loading:Signal<boolean>;
     didInfo:Signal<RequestFor<Awaited<ReturnType<Tap['getRepoInfo']>>, HTTPError>>;
+    trackedRepos:Signal<RequestFor<{ did:string }[], HTTPError>>;
+    repoPage:Signal<string|null>,
     error:Signal<string|null>;
     // Derived state
     isConnected:Signal<boolean>;
@@ -56,6 +58,8 @@ export function State ():AppState {
         isConnected: computed(() => {
             return state.tapHealth.value?.status === 'ok'
         }),
+        trackedRepos: signal(null),
+        repoPage: signal(null),
         isAuthenticated: computed(() => {
             if (state.auth.value === null) return null
             return state.auth.value?.authenticated ?? false
@@ -194,6 +198,15 @@ State.FetchAuthStatus = async function (state:AppState):Promise<void> {
     } finally {
         state.authLoading.value = false
     }
+}
+
+/**
+ * Fetch a list of all repos that you are tracking.
+ *
+ * @param state App state
+ */
+State.FetchRepos = async function (state:AppState):Promise<void> {
+    
 }
 
 /**

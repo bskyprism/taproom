@@ -29,21 +29,21 @@ export const ReposRoute:FunctionComponent<{ state:AppState }> = function ({
         ev.preventDefault()
         if (!addDid.value.trim()) return
 
-        addSubmitting.value = true
-        addError.value = null
-        addSuccess.value = null
+        batch(() => {
+            addSubmitting.value = true
+            addError.value = null
+            addSuccess.value = null
+        })
 
         try {
-            await ky.post('/api/tap/repos/add', {
-                json: { did: addDid.value.trim() }
-            })
+            await State.addRepo(state, addDid.value.trim())
             batch(() => {
                 addSuccess.value = `Added ${addDid.value}`
                 addDid.value = ''
                 addSubmitting.value = false
             })
 
-            // and update the stats
+            // ...and update the stats
             await State.FetchStats(state)
         } catch (err) {
             debug('error adding repo', err)
@@ -117,14 +117,18 @@ export const ReposRoute:FunctionComponent<{ state:AppState }> = function ({
                             isSpinning=${addSubmitting}
                             disabled=${!addDid.value.trim()}
                         >
-                            ${addSubmitting.value ? 'Adding...' : 'Add'}
+                            Add
                         <//>
                     </div>
                 </form>
 
                 <div class="response">
-                    ${addError.value && html`<p class="error">${addError.value}</p>`}
-                    ${addSuccess.value && html`<p class="success">${addSuccess.value}</p>`}
+                    ${addError.value && html`<p class="error">
+                        ${addError.value}
+                    </p>`}
+                    ${addSuccess.value && html`<p class="success">
+                        ${addSuccess.value}
+                    </p>`}
                     ${!addError.value && !addSuccess.value && html`
                         <p class="placeholder">-</p>
                     `}
