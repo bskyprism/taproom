@@ -3,7 +3,7 @@ import type { FunctionComponent } from 'preact'
 import Debug from '@substrate-system/debug'
 import './colophon.css'
 import { EM_DASH, NBSP } from '../constants.js'
-const debug = Debug('taproom:repos')
+const debug = Debug('taproom:view')
 
 export const ColophonRoute:FunctionComponent = function (props) {
     debug('colophon route', props)
@@ -34,18 +34,18 @@ export const ColophonRoute:FunctionComponent = function (props) {
         <p>
             This app connects to a remote${NBSP}
             <a href="https://docs.bsky.app/blog/introducing-tap">Tap</a>${NBSP}
-            instance, configure by the <code>TAP_SERVER_URL</code> environment
+            instance, configured by the <code>TAP_SERVER_URL</code> environment
             variable.
         </p>
 
         <p>
             This server knows the <code>TAP_ADMIN_PASSWORD</code>${NBSP}
-            set on the Tap server, and this server does access control
-            with a combination of a server password configured as an
-            environment variable and${NBSP}
+            (the password on your Tap server), and we use that for
+            access control. Login is a
+            combination of${NBSP}
             <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Authentication_API">
                 passkeys/biometric auth
-            </a>.
+            </a>, and a server password, configured as an environment variable.
         </p>
     </div>`
 }

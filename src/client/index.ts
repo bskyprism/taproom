@@ -1,6 +1,5 @@
 import { html } from 'htm/preact'
 import { type FunctionComponent, render } from 'preact'
-// import Debug from '@substrate-system/debug'
 import { State } from './state.js'
 import { COPYRIGHT, NBSP } from './constants.js'
 import { Nav } from './components/nav.js'
@@ -10,7 +9,6 @@ import './style.css'
 
 const router = Router()
 const state = State()
-// const debug = Debug('taproom')
 
 if (import.meta.env.DEV || import.meta.env.MODE === 'staging') {
     // @ts-expect-error DEV env
