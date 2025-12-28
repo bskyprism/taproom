@@ -343,10 +343,15 @@ npx wrangler d1 execute taproom-auth --remote --command="$(cat migrations/0001_p
 
 ### A Test DID
 
+This is the photos account.
+
 ```
 did:plc:ftzenmeeq3mzock6ee3hshr3
 ```
 
 ### Some Links
 
-* The [tap typescript package](https://github.com/bluesky-social/atproto/tree/main/packages/tap)
+* The [Tap typescript package](https://github.com/bluesky-social/atproto/tree/main/packages/tap)
+  This is a client library for the Tap server.
+* The [Tap server code](https://github.com/bluesky-social/indigo/tree/main/cmd/tap)
+  This is the Tap server.

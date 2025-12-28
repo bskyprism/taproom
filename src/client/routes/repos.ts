@@ -1,7 +1,7 @@
 import { html } from 'htm/preact'
 import { useCallback } from 'preact/hooks'
 import type { FunctionComponent } from 'preact'
-import { useSignal } from '@preact/signals'
+import { batch, useSignal } from '@preact/signals'
 import ky from 'ky'
 import Debug from '@substrate-system/debug'
 import { Button } from '../components/button.js'
@@ -37,14 +37,21 @@ export const ReposRoute:FunctionComponent<{ state:AppState }> = function ({
             await ky.post('/api/tap/repos/add', {
                 json: { did: addDid.value.trim() }
             })
-            addSuccess.value = `Added ${addDid.value}`
-            addDid.value = ''
+            batch(() => {
+                addSuccess.value = `Added ${addDid.value}`
+                addDid.value = ''
+            })
+
+            // and update the stats
             await State.FetchStats(state)
         } catch (err) {
             debug('error adding repo', err)
-            addError.value = err instanceof Error ? err.message : 'Failed to add repo'
-        } finally {
-            addSubmitting.value = false
+            batch(() => {
+                addError.value = (err instanceof Error ?
+                    err.message :
+                    'Failed to add repo')
+                addSubmitting.value = false
+            })
         }
     }, [])
 

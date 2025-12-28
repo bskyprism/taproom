@@ -4,7 +4,7 @@ import { type Tap } from '@atproto/tap'
 import ky, { type HTTPError } from 'ky'
 import Debug from '@substrate-system/debug'
 import type { TapHealth, TapStats } from '../shared.js'
-import { parseHttpError } from './util.js'
+import { parseHttpError, when } from './util.js'
 const debug = Debug('taproom:state')
 
 export type RequestFor<T, E = Error> = 'resolving'|null|E|T
@@ -36,7 +36,7 @@ export interface AppState {
     error:Signal<string|null>;
     // Derived state
     isConnected:Signal<boolean>;
-    isAuthenticated:Signal<boolean>;
+    isAuthenticated:Signal<boolean|null>;
 }
 
 export function State ():AppState {
@@ -59,6 +59,7 @@ export function State ():AppState {
             return state.tapHealth.value?.status === 'ok'
         }),
         isAuthenticated: computed(() => {
+            if (state.auth.value === null) return null
             return state.auth.value?.authenticated ?? false
         }),
     }
@@ -66,9 +67,18 @@ export function State ():AppState {
     State.init(state)
 
     onRoute((path:string, data) => {
-        if (AUTH_ROUTES.includes(path) && !state.isAuthenticated.value) {
-            return state._setRoute('/login')
-        }
+        when(state.isAuthenticated)
+            .then(() => {
+                if (
+                    AUTH_ROUTES.includes(path) &&
+                    // need to wait for the auth to finish before checking
+                    // `false` means we have made a call and you are not logged in
+                    // `null` means we have not checked yet
+                    state.isAuthenticated.value === false
+                ) {
+                    return state._setRoute('/login')
+                }
+            })
 
         state.route.value = path
         if (data.popstate) {
@@ -100,6 +110,23 @@ State.didInfo = async function (state:AppState, did:string):Promise<void> {
 }
 
 /**
+ * Follow another repo.
+ *
+ * @param state State
+ * @param did The new DID string to follow.
+ */
+State.addRepo = async function (_state:AppState, did:string) {
+    try {
+        await ky.post('/api/tap/repos/add', {
+            json: { did }
+        })
+    } catch (err) {
+        debug('error adding a repo', err)
+        throw err
+    }
+}
+
+/**
  * Fetch tap server health
  */
 State.FetchHealth = async function (state:AppState):Promise<void> {
@@ -127,7 +154,7 @@ State.FetchHealth = async function (state:AppState):Promise<void> {
 /**
  * Fetch tap server stats
  */
-State.FetchStats = async function (state: AppState): Promise<void> {
+State.FetchStats = async function (state:AppState):Promise<void> {
     batch(() => {
         state.loading.value = true
         state.error.value = null
@@ -135,11 +162,16 @@ State.FetchStats = async function (state: AppState): Promise<void> {
 
     try {
         const res = await ky.get('/api/tap/stats').json<TapStats>()
-        state.tapStats.value = res
+        batch(() => {
+            state.tapStats.value = res
+            state.loading.value = false
+        })
     } catch (err) {
-        state.error.value = await parseHttpError(err)
-    } finally {
-        state.loading.value = false
+        const errValue = await parseHttpError(err)
+        batch(() => {
+            state.error.value = errValue
+            state.loading.value = false
+        })
     }
 }
 

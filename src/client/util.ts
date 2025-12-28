@@ -1,11 +1,16 @@
-import { useSignal, type Signal, useSignalEffect } from '@preact/signals'
+import {
+    useSignal,
+    type Signal,
+    useSignalEffect,
+    effect
+} from '@preact/signals'
 import { HTTPError } from 'ky'
 
 /**
  * Extract a user-friendly error message from an HTTPError.
  * Reads the response body as plain text.
  */
-export async function parseHttpError (err: unknown): Promise<string> {
+export async function parseHttpError (err:unknown):Promise<string> {
     if (err instanceof HTTPError) {
         try {
             const text = await err.response.clone().text()
@@ -26,7 +31,7 @@ export async function parseHttpError (err: unknown): Promise<string> {
  * Format a number as an English string.
  *
  * @param n The number
- * @returns An English string, like "One Billion".
+ * @returns An English string, like "1 billion".
  */
 export function numberToString (n:number|null):string {
     if (n === null) return 'null'
@@ -56,4 +61,23 @@ export function useAsyncComputed<T> (
     })
 
     return result
+}
+
+/**
+ * Return a promise that resolves when the given signal is defined
+ * (not `null` and not `undefined`).
+ * @param signal The signal to wait for.
+ * @returns {Promise<T>}
+ */
+export function when<T> (signal:Signal<T|null|undefined>):Promise<T> {
+    return new Promise((resolve) => {
+        const dispose = effect(() => {
+            const value = signal.value
+            if (value !== null && value !== undefined) {
+                // Use queueMicrotask to avoid disposing during effect execution
+                queueMicrotask(() => dispose())
+                resolve(value as T)
+            }
+        })
+    })
 }
