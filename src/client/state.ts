@@ -204,9 +204,29 @@ State.FetchAuthStatus = async function (state:AppState):Promise<void> {
  * Fetch a list of all repos that you are tracking.
  *
  * @param state App state
+ * @param cursor Optional cursor for pagination
  */
-State.FetchRepos = async function (state:AppState):Promise<void> {
-    
+State.FetchRepos = async function (state:AppState, cursor?:string):Promise<void> {
+    state.trackedRepos.value = 'resolving'
+
+    try {
+        const url = cursor ? `/api/tap/repos/${cursor}` : '/api/tap/repos'
+        const data = await ky.get(url).json<{
+            dids:string[],
+            cursor:string|null
+        }>()
+
+        batch(() => {
+            state.trackedRepos.value = data.dids.map(did => ({ did }))
+            state.repoPage.value = data.cursor
+        })
+
+        debug('fetched repos', data)
+    } catch (_err) {
+        const err = _err as HTTPError
+        debug('error fetching repos', err)
+        state.trackedRepos.value = err
+    }
 }
 
 /**
