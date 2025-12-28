@@ -51,11 +51,16 @@ export const Taproom:FunctionComponent = function () {
         </div>
 
         <${Nav} state=${state} />
+
         <main class="main-content">
             <${ChildNode} state=${state} />
         </main>
 
         <footer>
+            <p>
+                <a href="/colophon">Colophon</a>
+            </p>
+
             <p>
                 <span>${COPYRIGHT}</span> 2025${NBSP}
                 <a target="_blank" href="https://nichoth.com/">
