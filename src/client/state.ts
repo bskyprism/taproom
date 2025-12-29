@@ -268,7 +268,7 @@ State.resolveDid = async function (
     state:AppState,
     did:string
 ):Promise<DidDocument> {
-    if (state.resolvedRepos[did]) {
+    if (state.resolvedRepos.value[did]) {
         return state.resolvedRepos[did]
     }
 

@@ -19,6 +19,8 @@
     }
 
     & details {
+        border: 1px solid;
+        padding: 0.6rem 1rem;
         interpolate-size: allow-keywords;
 
         & summary {
