@@ -12,7 +12,7 @@
 	],
 	"routes": [
 		{
-			"pattern": "taproom.drerings.app",
+			"pattern": "bskytaproom.dev",
 			"custom_domain": true,
 		}
 	],
