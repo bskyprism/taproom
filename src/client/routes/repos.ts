@@ -1,7 +1,7 @@
 import { html } from 'htm/preact'
 import { useCallback } from 'preact/hooks'
 import type { FunctionComponent } from 'preact'
-import { batch, useSignal } from '@preact/signals'
+import { batch, useComputed, useSignal } from '@preact/signals'
 import ky from 'ky'
 import Debug from '@substrate-system/debug'
 import { Button } from '../components/button.js'
@@ -82,12 +82,7 @@ export const ReposRoute:FunctionComponent<{ state:AppState }> = function ({
     return html`<div class="route repos">
         <h2>Repos</h2>
 
-        <dl>
-            <div>
-                <dt>Total Repos Followed</dt>
-                <dd>${state.tapStats.value?.repoCount ?? '—'}</dd>
-            </div>
-        </dl>
+        <${FollowingCount} state=${state} />
 
         <section class="add-repo">
             <header>
@@ -180,4 +175,26 @@ export const ReposRoute:FunctionComponent<{ state:AppState }> = function ({
         </section>
 
     </div>`
+}
+
+function FollowingCount ({ state }:{ state:AppState }) {
+    const isFollowing = useComputed(() => {
+        return !!state.tapStats.value?.repoCount
+    })
+
+    return html`
+        <dl>
+            <div>
+                <dt>
+                    ${isFollowing.value ?
+                        html`
+                            <a href="/repos/following">Total Repos Followed</a>
+                        ` :
+                        'Total Repos Followed'
+                    }
+                </dt>
+                <dd>${state.tapStats.value?.repoCount ?? '—'}</dd>
+            </div>
+        </dl>
+    `
 }
