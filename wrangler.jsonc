@@ -38,7 +38,7 @@
 	"vars": {
 		"NODE_ENV": "staging",
 		"ALLOW_ANON_READS": true,
-		"TAP_SERVER_URL": "https://tap.drerings.app"
+		"TAP_SERVER_URL": "https://bskytap.fly.dev/"
 	},
 	"observability": {
 		"enabled": true
