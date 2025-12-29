@@ -274,11 +274,11 @@ State.resolveDid = async function (
 
     const res = await ky.get(`/api/tap/resolve/${did}`).json<DidDocument>()
 
-    debug('resolved this one', did)
+    debug('resolved this one', did, res)
 
     state.resolvedRepos.value = {
         ...state.resolvedRepos.value,
-        did: res
+        [did]: res
     }
 
     return res

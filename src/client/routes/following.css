@@ -62,4 +62,10 @@
         font-family: monospace;
         font-size: 0.85rem;
     }
+
+    & .loading {
+        margin: 0;
+        color: var(--color-text-muted, #666);
+        font-style: italic;
+    }
 }

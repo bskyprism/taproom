@@ -1,24 +1,30 @@
 import { html } from 'htm/preact'
 import { useCallback } from 'preact/hooks'
 import type { FunctionComponent } from 'preact'
-import { type DidDocument } from '@atproto/identity'
 import Debug from '@substrate-system/debug'
 import { State, type AppState } from '../state.js'
 import './following.css'
-import { useSignal } from '@preact/signals'
 const debug = Debug('taproom:following')
 
 export const FollowingRoute:FunctionComponent<{ state:AppState }> = function ({
     state
 }) {
-    debug('following route', state.trackedRepos.value)
     const { error, data, pending } = state.trackedRepos.value
+    const resolvedDids = state.resolvedRepos
 
-    const selectedDid = useSignal<null|DidDocument>(null)
+    const handleToggle = useCallback(async (ev:Event) => {
+        const details = ev.target as HTMLDetailsElement
+        if (!details.open) return  // Only fetch when opening
 
-    const handleClick = useCallback(async (ev:MouseEvent) => {
-        const currentDid = await State.resolveDid()
-    }, [])
+        const did = details.dataset.did
+        if (!did) return
+
+        try {
+            await State.resolveDid(state, did)
+        } catch (err) {
+            debug('error resolving did', err)
+        }
+    }, [state])
 
     return html`<div class="route following">
         <h2>Following</h2>
@@ -32,28 +38,35 @@ export const FollowingRoute:FunctionComponent<{ state:AppState }> = function ({
 
         ${data &&
             html`<ul>
-                ${data.map(r => html`
-                    <li>
-                        <details>
-                            <summary>${r.did}</summary>
-                            <div class="details-inner">
-                                <dl>
-                                    <dt>Handle</dt>
-                                    <dd>@placeholder.bsky.social</dd>
-                                    <dt>PDS</dt>
-                                    <dd>https://bsky.network</dd>
-                                    <dt>Created</dt>
-                                    <dd>2024-01-15</dd>
-                                </dl>
-                            </div>
-                        </details>
-                    </li>
-                `)}
+                ${data.map(r => {
+                    const doc = resolvedDids.value[r.did]
+                    return html`
+                        <li>
+                            <details data-did=${r.did} onToggle=${handleToggle}>
+                                <summary>${r.did}</summary>
+                                <div class="details-inner">
+                                    ${doc ? html`
+                                        <dl>
+                                            <dt>ID</dt>
+                                            <dd>${doc.id}</dd>
+                                            ${doc.alsoKnownAs?.map(aka => html`
+                                                <dt>Handle</dt>
+                                                <dd>${aka.replace('at://', '@')}</dd>
+                                            `)}
+                                            ${doc.service?.map(svc => html`
+                                                <dt>${svc.type}</dt>
+                                                <dd>${svc.serviceEndpoint}</dd>
+                                            `)}
+                                        </dl>
+                                    ` : html`
+                                        <p class="loading">Loading...</p>
+                                    `}
+                                </div>
+                            </details>
+                        </li>
+                    `
+                })}
             </ul>`
         }
     </div>`
 }
-
-// function expand<T, E> (input:Signal<RequestFor<T, E>>) {
-
-// }

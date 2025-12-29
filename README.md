@@ -48,11 +48,17 @@ There are [several env variables](#config) you can use to configure things.
 This is a template repository. Use the template button in the Github UI,
 then clone and run a few commands on your local machine.
 
-### Dependencies
+Install dependencies:
 
 ```sh
 npm i
 ```
+
+### Faucet
+
+Note this depends on [a faucet](https://github.com/bskyprism/faucet) instance
+as the Tap server, because we need an endpoint to list all repos being followed.
+
 
 ### Create a D1 Database
 
@@ -120,6 +126,10 @@ Then add the returned ID to `wrangler.jsonc`:
 You should be running a Tap server also,
 [which you can do with Docker](https://github.com/bluesky-social/indigo/tree/main/cmd/tap#distribution--deployment)
 and a hosting service like fly.io.
+
+The tap server must
+[have an endpoint to list all repos](https://github.com/bskyprism/faucet).
+That's the only part that isn't stock Tap.
 
 
 ----------
