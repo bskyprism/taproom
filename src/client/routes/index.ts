@@ -16,9 +16,12 @@ export default function _Router () {
         State.FetchRepos(state)
         return ReposRoute
     })
+    router.addRoute('/repos/following', (_match, state:AppState) => {
+        State.FetchRepos(state)
+        return FollowingRoute
+    })
     router.addRoute('/lookup', () => LookupRoute)
     router.addRoute('/login', () => LoginRoute)
-    router.addRoute('/repos/following', () => FollowingRoute)
 
     return router
 }

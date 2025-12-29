@@ -5,10 +5,13 @@ import ky, { type HTTPError } from 'ky'
 import Debug from '@substrate-system/debug'
 import type { TapHealth, TapStats } from '../shared.js'
 import { parseHttpError, when } from './util.js'
-import { type DidDocument } from '@atproto/identity'
 const debug = Debug('taproom:state')
 
-export type RequestFor<T, E = Error> = 'resolving'|null|E|T
+export type RequestFor<T, E=Error> = {
+    pending:boolean;
+    data:null|T;
+    error:null|E
+}
 export type InfoType = Awaited<ReturnType<Tap['getRepoInfo']>>
 
 export interface AuthStatus {
@@ -21,6 +24,14 @@ export const AUTH_ROUTES:string[] = ([
     import.meta.env.VITE_ALLOW_ANON_READS ? null : ['/', '/lookup']
 ]).filter(Boolean).flat()
 
+/**
+ * Create initial request state.
+ * @returns {RequestFor<T, E>}
+ */
+export function RequestState<T = any, E=Error> ():RequestFor<T, E> {
+    return { pending: false, data: null, error: null }
+}
+
 export interface AppState {
     route:Signal<string>;
     _setRoute:(path:string)=>void;
@@ -32,7 +43,7 @@ export interface AppState {
     tapStats:Signal<TapStats|null>;
     loading:Signal<boolean>;
     didInfo:Signal<RequestFor<Awaited<ReturnType<Tap['getRepoInfo']>>, HTTPError>>;
-    trackedRepos:Signal<RequestFor<{ did:DidDocument }[], HTTPError>>;
+    trackedRepos:Signal<RequestFor<{ did:string }[], HTTPError>>;
     repoPage:Signal<string|null>,
     error:Signal<string|null>;
     // Derived state
@@ -53,13 +64,13 @@ export function State ():AppState {
         tapHealth: signal<TapHealth|null>(null),
         tapStats: signal<TapStats|null>(null),
         loading: signal<boolean>(false),
-        didInfo: signal(null),
+        didInfo: signal(RequestState()),
         error: signal<string|null>(null),
         // Derived state
         isConnected: computed(() => {
             return state.tapHealth.value?.status === 'ok'
         }),
-        trackedRepos: signal(null),
+        trackedRepos: signal(RequestState()),
         repoPage: signal(null),
         isAuthenticated: computed(() => {
             if (state.auth.value === null) return null
@@ -100,15 +111,15 @@ export function State ():AppState {
 
 State.didInfo = async function (state:AppState, did:string):Promise<void> {
     const urlDid = encodeURIComponent(did.trim())
-    state.didInfo.value = 'resolving'
+    state.didInfo.value = { ...state.didInfo.value, pending: true }
 
     try {
         const info = await ky.get(`/api/tap/info/${urlDid}`)
         const infoData = await info.json<ReturnType<Tap['getRepoInfo']>>()
-        state.didInfo.value = infoData
+        state.didInfo.value = { ...state.didInfo.value, data: infoData }
     } catch (_err) {
         const err = _err as HTTPError
-        state.didInfo.value = err
+        state.didInfo.value = { ...state.didInfo.value, error: err }
     }
 }
 
@@ -206,30 +217,50 @@ State.FetchAuthStatus = async function (state:AppState):Promise<void> {
  * @param cursor Optional cursor for pagination
  */
 State.FetchRepos = async function (state:AppState, cursor?:string):Promise<void> {
-    // Only fetch if null - prevent loops
-    if (state.trackedRepos.value !== null) return
-    state.trackedRepos.value = 'resolving'
+    // No infinite loop
+    // the route match function is called on every render
+    if (
+        state.trackedRepos.value.pending ||
+        state.trackedRepos.value.data
+    ) return
+    state.trackedRepos.value = { ...state.trackedRepos.value, pending: true }
 
     try {
         const url = cursor ?
             `/api/tap/repos/${encodeURIComponent(cursor)}` :
             '/api/tap/repos'
         const data = await ky.get(url).json<{
-            dids:DidDocument[];
+            dids:{ did }[];
             cursor:string|null;
         }>()
 
         debug('fetched repos', data)
 
         batch(() => {
-            state.trackedRepos.value = data.dids.map(did => ({ did }))
+            state.trackedRepos.value = {
+                ...state.trackedRepos.value,
+                pending: false,
+                data: data.dids
+            }
             state.repoPage.value = data.cursor
         })
     } catch (_err) {
         const err = _err as HTTPError
         debug('error fetching repos', err)
-        state.trackedRepos.value = err
+        state.trackedRepos.value = {
+            ...state.trackedRepos.value,
+            pending: false,
+            error: err
+        }
     }
+}
+
+State.resolveDid = async function (did:string) {
+    const res = await ky.get(`/api/tap/resolve/${did}`)
+
+    debug('resolved this one', did)
+
+    return res
 }
 
 /**

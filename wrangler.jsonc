@@ -40,10 +40,6 @@
 		"ALLOW_ANON_READS": true,
 		"TAP_SERVER_URL": "https://bskytap.fly.dev"
 	},
-	"build": {
-		"watch_dir": "./src",
-		"command": "npm run build"
-	},
 	"observability": {
 		"enabled": true
 	},

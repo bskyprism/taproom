@@ -205,6 +205,7 @@ app.get('/api/tap/repos/:cursor?', async (c) => {
     let url:string
     try {
         const cursor = c.req.param('cursor')
+        const shouldResolve = c.req.query('resolve') !== undefined
         url = (cursor ?
             `${c.env.TAP_SERVER_URL}/repos/${cursor}` :
             `${c.env.TAP_SERVER_URL}/repos`)
@@ -214,9 +215,17 @@ app.get('/api/tap/repos/:cursor?', async (c) => {
             c.env.TAP_ADMIN_PASSWORD
         )
 
-        const tap = getTapClient(c)
+        if (shouldResolve) {  // return hydrated DID docs
+            const tap = getTapClient(c)
+            return c.json({
+                dids: await hydrateRepos(data.dids, tap),
+                cursor: data.cursor
+            })
+        }
+
+        // return did strings only
         return c.json({
-            dids: await hydrateRepos(data.dids, tap),
+            dids: data.dids.map(did => ({ did })),
             cursor: data.cursor
         })
     } catch (err) {

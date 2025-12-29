@@ -177,6 +177,10 @@ export const ReposRoute:FunctionComponent<{ state:AppState }> = function ({
     </div>`
 }
 
+/**
+ * If we are following people, return a link to /repos/following
+ * else, return just text.
+ */
 function FollowingCount ({ state }:{ state:AppState }) {
     const isFollowing = useComputed(() => {
         return !!state.tapStats.value?.repoCount
