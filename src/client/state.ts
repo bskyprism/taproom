@@ -3,6 +3,7 @@ import Route from 'route-event'
 import { type Tap } from '@atproto/tap'
 import ky, { type HTTPError } from 'ky'
 import Debug from '@substrate-system/debug'
+import { type DidDocument } from '@atproto/identity'
 import type { TapHealth, TapStats } from '../shared.js'
 import { parseHttpError, when } from './util.js'
 const debug = Debug('taproom:state')
@@ -44,7 +45,8 @@ export interface AppState {
     loading:Signal<boolean>;
     didInfo:Signal<RequestFor<Awaited<ReturnType<Tap['getRepoInfo']>>, HTTPError>>;
     trackedRepos:Signal<RequestFor<{ did:string }[], HTTPError>>;
-    repoPage:Signal<string|null>,
+    resolvedRepos:Signal<Record<string, DidDocument>>;
+    repoPage:Signal<string|null>;
     error:Signal<string|null>;
     // Derived state
     isConnected:Signal<boolean>;
@@ -71,6 +73,7 @@ export function State ():AppState {
             return state.tapHealth.value?.status === 'ok'
         }),
         trackedRepos: signal(RequestState()),
+        resolvedRepos: signal({}),
         repoPage: signal(null),
         isAuthenticated: computed(() => {
             if (state.auth.value === null) return null
@@ -255,10 +258,27 @@ State.FetchRepos = async function (state:AppState, cursor?:string):Promise<void>
     }
 }
 
-State.resolveDid = async function (did:string) {
-    const res = await ky.get(`/api/tap/resolve/${did}`)
+/**
+ * Find a DID document given an ID string.
+ * Caches all documents at `state.resolvedRepos`, returns the new document.
+ * @returns {Promise<DidDocument>} The DID document for the given ID.
+ */
+State.resolveDid = async function (
+    state:AppState,
+    did:string
+):Promise<DidDocument> {
+    if (state.resolvedRepos[did]) {
+        return state.resolvedRepos[did]
+    }
+
+    const res = await ky.get(`/api/tap/resolve/${did}`).json<DidDocument>()
 
     debug('resolved this one', did)
+
+    state.resolvedRepos.value = {
+        ...state.resolvedRepos.value,
+        did: res
+    }
 
     return res
 }
