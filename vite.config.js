@@ -9,7 +9,8 @@ import { cloudflare } from '@cloudflare/vite-plugin'
 export default defineConfig(({ mode }) => {
     return {
         define: {
-            global: 'globalThis'
+            global: 'globalThis',
+            'import.meta.env.VITE_ALLOW_ANON_READS': JSON.stringify(true)
         },
         resolve: {
             alias: {
