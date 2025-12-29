@@ -45,22 +45,14 @@ export const FollowingRoute:FunctionComponent<{ state:AppState }> = function ({
                             <details data-did=${r.did} onToggle=${handleToggle}>
                                 <summary>${r.did}</summary>
                                 <div class="details-inner">
-                                    ${doc ? html`
-                                        <dl>
-                                            <dt>ID</dt>
-                                            <dd>${doc.id}</dd>
-                                            ${doc.alsoKnownAs?.map(aka => html`
-                                                <dt>Handle</dt>
-                                                <dd>${aka.replace('at://', '@')}</dd>
-                                            `)}
-                                            ${doc.service?.map(svc => html`
-                                                <dt>${svc.type}</dt>
-                                                <dd>${svc.serviceEndpoint}</dd>
-                                            `)}
-                                        </dl>
-                                    ` : html`
-                                        <p class="loading">Loading...</p>
-                                    `}
+                                    ${doc ?
+                                        html`<pre>
+                                            ${JSON.stringify(doc, null, 2)}
+                                        </pre>` :
+                                        html`
+                                            <p class="loading">Loading...</p>
+                                        `
+                                    }
                                 </div>
                             </details>
                         </li>
@@ -70,3 +62,22 @@ export const FollowingRoute:FunctionComponent<{ state:AppState }> = function ({
         }
     </div>`
 }
+
+// function DidDoc ({ did }) {
+//     return html`<pre>
+//         ${JSON.stringify(did, null, 2)}
+//     </pre>`
+// }
+
+// <dl>
+//     <dt>ID</dt>
+//     <dd>${doc.id}</dd>
+//     ${doc.alsoKnownAs?.map(aka => html`
+//         <dt>Handle</dt>
+//         <dd>${aka.replace('at://', '@')}</dd>
+//     `)}
+//     ${doc.service?.map(svc => html`
+//         <dt>${svc.type}</dt>
+//         <dd>${svc.serviceEndpoint}</dd>
+//     `)}
+// </dl>
