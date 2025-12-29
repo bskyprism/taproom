@@ -18,32 +18,46 @@
         }
     }
 
-    & details summary {
-        cursor: pointer;
-        padding: 0.75rem 0;
-        font-family: monospace;
-        font-size: 0.9rem;
+    & details {
+        interpolate-size: allow-keywords;
+
+        & summary {
+            cursor: pointer;
+            padding: 0.75rem 0;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        &::details-content {
+            height: 0;
+            overflow: hidden;
+            transition: height 0.3s ease-out;
+        }
+
+        &[open]::details-content {
+            height: auto;
+        }
     }
 
-    & .details-content {
+    & .details-inner {
         padding: 0.5rem 1rem 1rem;
         margin-left: 1rem;
         border-left: 2px solid var(--color-border, #ccc);
     }
 
-    & .details-content dl {
+    & .details-inner dl {
         display: grid;
         grid-template-columns: auto 1fr;
         gap: 0.25rem 1rem;
         margin: 0;
     }
 
-    & .details-content dt {
+    & .details-inner dt {
         font-weight: 600;
         color: var(--color-text-muted, #666);
     }
 
-    & .details-content dd {
+    & .details-inner dd {
         margin: 0;
         font-family: monospace;
         font-size: 0.85rem;

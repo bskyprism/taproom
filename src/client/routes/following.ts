@@ -27,7 +27,7 @@ export const FollowingRoute:FunctionComponent<{ state:AppState }> = function ({
                     <li>
                         <details>
                             <summary>${r.did}</summary>
-                            <div class="details-content">
+                            <div class="details-inner">
                                 <dl>
                                     <dt>Handle</dt>
                                     <dd>@placeholder.bsky.social</dd>
