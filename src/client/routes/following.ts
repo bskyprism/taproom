@@ -1,8 +1,11 @@
 import { html } from 'htm/preact'
+import { useCallback } from 'preact/hooks'
 import type { FunctionComponent } from 'preact'
+import { type DidDocument } from '@atproto/identity'
 import Debug from '@substrate-system/debug'
-import type { AppState } from '../state.js'
+import { State, type AppState } from '../state.js'
 import './following.css'
+import { useSignal } from '@preact/signals'
 const debug = Debug('taproom:following')
 
 export const FollowingRoute:FunctionComponent<{ state:AppState }> = function ({
@@ -10,6 +13,12 @@ export const FollowingRoute:FunctionComponent<{ state:AppState }> = function ({
 }) {
     debug('following route', state.trackedRepos.value)
     const { error, data, pending } = state.trackedRepos.value
+
+    const selectedDid = useSignal<null|DidDocument>(null)
+
+    const handleClick = useCallback(async (ev:MouseEvent) => {
+        const currentDid = await State.resolveDid()
+    }, [])
 
     return html`<div class="route following">
         <h2>Following</h2>

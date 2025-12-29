@@ -261,6 +261,7 @@ State.FetchRepos = async function (state:AppState, cursor?:string):Promise<void>
 /**
  * Find a DID document given an ID string.
  * Caches all documents at `state.resolvedRepos`, returns the new document.
+ *
  * @returns {Promise<DidDocument>} The DID document for the given ID.
  */
 State.resolveDid = async function (
