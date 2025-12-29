@@ -19,6 +19,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
+    "@atproto/identity": "^0.4.10",
     "@atproto/tap": "^0.0.2",
     "@preact/signals": "^2.5.1",
     "@simplewebauthn/browser": "^13.2.2",

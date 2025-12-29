@@ -5,6 +5,7 @@ import ky, { type HTTPError } from 'ky'
 import Debug from '@substrate-system/debug'
 import type { TapHealth, TapStats } from '../shared.js'
 import { parseHttpError, when } from './util.js'
+import { type DidDocument } from '@atproto/identity'
 const debug = Debug('taproom:state')
 
 export type RequestFor<T, E = Error> = 'resolving'|null|E|T
@@ -31,7 +32,7 @@ export interface AppState {
     tapStats:Signal<TapStats|null>;
     loading:Signal<boolean>;
     didInfo:Signal<RequestFor<Awaited<ReturnType<Tap['getRepoInfo']>>, HTTPError>>;
-    trackedRepos:Signal<RequestFor<{ did:string }[], HTTPError>>;
+    trackedRepos:Signal<RequestFor<{ did:DidDocument }[], HTTPError>>;
     repoPage:Signal<string|null>,
     error:Signal<string|null>;
     // Derived state
@@ -140,7 +141,6 @@ State.FetchHealth = async function (state:AppState):Promise<void> {
     try {
         const data = await ky.get('/api/tap/health').json<TapHealth>()
         state.tapHealth.value = data
-        debug('fetched health', data)
     } catch (err) {
         const message = await parseHttpError(err)
         debug('health failure', err)
@@ -191,7 +191,6 @@ State.FetchAuthStatus = async function (state:AppState):Promise<void> {
     try {
         const data = await ky.get('/api/auth/status').json<AuthStatus>()
         state.auth.value = data
-        debug('fetched auth status', data)
     } catch (err) {
         debug('auth status error', err)
         state.auth.value = { registered: false, authenticated: false }
@@ -207,21 +206,25 @@ State.FetchAuthStatus = async function (state:AppState):Promise<void> {
  * @param cursor Optional cursor for pagination
  */
 State.FetchRepos = async function (state:AppState, cursor?:string):Promise<void> {
+    // Only fetch if null - prevent loops
+    if (state.trackedRepos.value !== null) return
     state.trackedRepos.value = 'resolving'
 
     try {
-        const url = cursor ? `/api/tap/repos/${cursor}` : '/api/tap/repos'
+        const url = cursor ?
+            `/api/tap/repos/${encodeURIComponent(cursor)}` :
+            '/api/tap/repos'
         const data = await ky.get(url).json<{
-            dids:string[],
-            cursor:string|null
+            dids:DidDocument[];
+            cursor:string|null;
         }>()
+
+        debug('fetched repos', data)
 
         batch(() => {
             state.trackedRepos.value = data.dids.map(did => ({ did }))
             state.repoPage.value = data.cursor
         })
-
-        debug('fetched repos', data)
     } catch (_err) {
         const err = _err as HTTPError
         debug('error fetching repos', err)

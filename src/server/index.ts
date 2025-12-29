@@ -1,4 +1,5 @@
 import { type Context, Hono } from 'hono'
+import { type DidDocument } from '@atproto/identity'
 import type { ContentfulStatusCode } from 'hono/utils/http-status'
 import { cors } from 'hono/cors'
 import { getCookie } from 'hono/cookie'
@@ -198,6 +199,51 @@ app.get('/api/tap/resolve/:did', async (c) => {
 })
 
 /**
+ * Get list of tracked repos
+ */
+app.get('/api/tap/repos/:cursor?', async (c) => {
+    let url:string
+    try {
+        const cursor = c.req.param('cursor')
+        url = (cursor ?
+            `${c.env.TAP_SERVER_URL}/repos/${cursor}` :
+            `${c.env.TAP_SERVER_URL}/repos`)
+
+        const data = await tapFetch<{ dids:string[], cursor:string|null }>(
+            url,
+            c.env.TAP_ADMIN_PASSWORD
+        )
+
+        const tap = getTapClient(c)
+        return c.json({
+            dids: await hydrateRepos(data.dids, tap),
+            cursor: data.cursor
+        })
+    } catch (err) {
+        console.log('**** errrrrr *****', err)
+        console.log('**', url!)
+        const status:ContentfulStatusCode = err instanceof TapFetchError ?
+            err.status :
+            500
+        const message = err instanceof Error ? err.message : 'Unknown error'
+        return c.text(message, status)
+    }
+})
+
+/**
+ * Resolve the DID documents for a given list of IDs.
+ * @param dids ID strings.
+ * @returns {DidDocument[]}
+ */
+async function hydrateRepos (dids:string[], tap:Tap):Promise<DidDocument[]> {
+    const docs = await Promise.all(dids.map(did => {
+        return tap.resolveDid(did)
+    }))
+
+    return docs.filter(Boolean)
+}
+
+/**
  * Add a repo to track
  */
 app.post('/api/tap/repos/add', async (c) => {
@@ -285,6 +331,8 @@ async function tapFetch<T> (
 
     if (!res.ok) {
         const text = await res.text()
+        console.log('not ok...', text)
+        console.log('the url', tapUrl)
         const message = parseErrorBody(text) || res.statusText
         throw new TapFetchError(message, res.status)
     }
