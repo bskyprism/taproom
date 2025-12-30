@@ -23,6 +23,10 @@ code {
     font-size: 1rem;
 }
 
+div.explanation {
+    margin-top: 4rem;
+}
+
 a {
     transition: all 0.4s;
     text-decoration-thickness: 1px;

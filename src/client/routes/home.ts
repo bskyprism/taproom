@@ -3,6 +3,7 @@ import type { FunctionComponent } from 'preact'
 import { Button } from '../components/button.js'
 import { ErrorBanner } from '../components/error-banner.js'
 import type { AppState } from '../state.js'
+import { NBSP } from '../constants.js'
 import { numberToString } from '../util.js'
 import { State } from '../state.js'
 
@@ -97,5 +98,15 @@ export const HomeRoute:FunctionComponent<{ state:AppState }> = function ({
                 </dl>
             </div>
         </div>
+
+        <div class="explanation">
+            <p>This is a GUI for${NBSP}
+            <a
+                href="https://github.com/bluesky-social/indigo/blob/main/cmd/tap/README.md"
+            >
+                Tap
+            </a>, a sync server from Bluesky.</p>
+        </div>
+
     </div>`
 }
