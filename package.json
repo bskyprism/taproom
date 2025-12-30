@@ -32,6 +32,9 @@
     "preact": "^10.28.0",
     "route-event": "^7.4.0"
   },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.40.0"
+  },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.19.0",
     "@cloudflare/workers-types": "^4.20250109.0",
