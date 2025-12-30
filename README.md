@@ -3,9 +3,15 @@
 Look at information about a
 [tap server](https://github.com/bluesky-social/indigo/blob/main/cmd/tap/README.md).
 
-This is a Cloudflare application.
+This is a Cloudflare application. It is visible on the public internet at
+[bskytaproom.dev](https://bskytaproom.dev/).
 
 There are [several env variables](#config) you can use to configure things.
+
+The demo version of this app [allows anonymous reads](#allow_anon_reads).
+It is using a tap server deployed specifically for this app, at
+[bskytap.fly.dev](https://bskytap.fly.dev/).
+
 
 <details><summary><h2>Contents</h2></summary>
 
@@ -138,7 +144,7 @@ That's the only part that isn't stock Tap.
 ## Config
 
 Add some env variables to `.dev.vars` locally. These should be set on
-Cloudflare (or your platform) as well.
+Cloudflare (or other platform) as well.
 
 ```sh
 NODE_ENV="development"
@@ -150,12 +156,15 @@ REGISTRATION_SECRET="abc123"
 
 ### TAP_ADMIN_PASSWORD
 
-This is the secret for your tap server.
+This is the secret for your tap server. The Tap server also will send this
+as authentication when it calls the webook URL here.
 
 ### ALLOW_ANON_READS
 
-The Tap server requires the admin password for all requests. If this variable
-is set, then read operations do not require any auth.
+The Tap server requires the admin password for all requests. This server
+knows the admin password, and it can add additional, or more relaxed,
+authentication. If this variable is set, then read operations do not
+require any auth, only writes.
 
 ### REGISTRATION_SECRET
 
