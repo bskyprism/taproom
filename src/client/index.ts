@@ -1,4 +1,5 @@
 import { html } from 'htm/preact'
+import { useMemo } from 'preact/hooks'
 import { type FunctionComponent, render } from 'preact'
 import { State } from './state.js'
 import { COPYRIGHT, NBSP } from './constants.js'
@@ -19,7 +20,9 @@ if (import.meta.env.DEV || import.meta.env.MODE === 'staging') {
 }
 
 export const Taproom:FunctionComponent = function () {
-    const match = router.match(state.route.value)
+    const match = useMemo(() => {
+        return router.match(state.route.value)
+    }, [state.route.value])
 
     if (!match || !match.action) {
         return html`<div class="app">

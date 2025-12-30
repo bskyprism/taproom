@@ -11,15 +11,35 @@
     }
 
     & li {
-        border-bottom: 1px solid var(--color-border, #e0e0e0);
+        border-bottom: 1px solid var(--color-border);
 
         &:last-child {
             border-bottom: none;
         }
+
+        & > div {
+            border: 1px solid var(--color-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+
+            & > button {
+                margin-right: 1rem;
+                margin-top: 0.8rem;
+                font-size: 1rem;
+            }
+
+            & > .confirm-remove {
+                margin-top: 1rem;
+
+                & button {
+                    min-width: 5rem;
+                }
+            }
+        }
     }
 
     & details {
-        border: 1px solid;
         padding: 0.6rem 1rem;
         interpolate-size: allow-keywords;
 
@@ -27,7 +47,16 @@
             cursor: pointer;
             padding: 0.75rem 0;
             font-family: monospace;
-            font-size: 0.9rem;
+            font-size: 1rem;
+        }
+
+        & summary::marker {
+            font-size: 0.8em;
+        }
+
+        & .did-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         &::details-content {
@@ -44,7 +73,7 @@
     & .details-inner {
         padding: 0.5rem 1rem 1rem;
         margin-left: 1rem;
-        border-left: 2px solid var(--color-border, #ccc);
+        border-left: 2px solid var(--color-border);
     }
 
     & .details-inner dl {
@@ -56,18 +85,60 @@
 
     & .details-inner dt {
         font-weight: 600;
-        color: var(--color-text-muted, #666);
+        color: var(--color-muted);
     }
 
     & .details-inner dd {
         margin: 0;
         font-family: monospace;
-        font-size: 0.85rem;
     }
 
     & .loading {
         margin: 0;
-        color: var(--color-text-muted, #666);
+        color: var(--color-muted);
         font-style: italic;
+    }
+
+    & .remove-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.25rem;
+        opacity: 0.4;
+        transition: opacity 0.15s;
+        flex-shrink: 0;
+
+        &:hover {
+            opacity: 1;
+        }
+
+        & svg {
+            width: 2rem;
+            height: 2rem;
+        }
+    }
+
+    & .confirm-remove {
+        display: flex;
+        margin-right: 1rem;
+        align-items: center;
+        gap: 0.5rem;
+        flex-shrink: 0;
+
+        & code {
+            background: var(--color-bg-secondary);
+            padding: 0.1rem 0.3rem;
+        }
+
+        & .confirm-btn {
+            background: var(--color-error);
+            color: var(--color-bg);
+            border: none;
+        }
+
+        & .cancel-btn {
+            background: none;
+            border: 1px solid var(--color-border);
+        }
     }
 }

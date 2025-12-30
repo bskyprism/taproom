@@ -144,6 +144,25 @@ State.addRepo = async function (_state:AppState, did:string) {
 }
 
 /**
+ * Stop following a repo.
+ *
+ * @param state State
+ * @param did The DID string to stop following.
+ */
+State.removeRepo = async function (state:AppState, did:string) {
+    try {
+        await ky.post('/api/tap/repos/remove', {
+            json: { did }
+        })
+        // Refresh the repos list
+        await State.FetchRepos(state)
+    } catch (err) {
+        debug('error removing a repo', err)
+        throw err
+    }
+}
+
+/**
  * Fetch tap server health
  */
 State.FetchHealth = async function (state:AppState):Promise<void> {

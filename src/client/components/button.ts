@@ -8,6 +8,7 @@ interface ButtonProps {
     isSpinning?:Signal<boolean>;
     className?:string;
     disabled?:boolean;
+    class?:string;
 }
 
 export const Button:FunctionComponent<ButtonProps> = function (props) {
@@ -17,6 +18,7 @@ export const Button:FunctionComponent<ButtonProps> = function (props) {
     const classes = ([
         'btn',
         props.className,
+        props.class,
         isSpinning.value ? 'spinning' : ''
     ])
         .filter(Boolean)

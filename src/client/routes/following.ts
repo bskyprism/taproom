@@ -1,8 +1,11 @@
 import { html } from 'htm/preact'
 import { useCallback } from 'preact/hooks'
+import { useSignal } from '@preact/signals'
 import type { FunctionComponent } from 'preact'
 import Debug from '@substrate-system/debug'
 import { State, type AppState } from '../state.js'
+import { CloseX } from '../components/close-x.js'
+import { Button } from '../components/button.js'
 import './following.css'
 const debug = Debug('taproom:following')
 
@@ -11,6 +14,7 @@ export const FollowingRoute:FunctionComponent<{ state:AppState }> = function ({
 }) {
     const { error, data, pending } = state.trackedRepos.value
     const resolvedDids = state.resolvedRepos
+    const confirmingRemove = useSignal<string | null>(null)
 
     const handleToggle = useCallback(async (ev:Event) => {
         const details = ev.target as HTMLDetailsElement
@@ -23,6 +27,24 @@ export const FollowingRoute:FunctionComponent<{ state:AppState }> = function ({
             await State.resolveDid(state, did)
         } catch (err) {
             debug('error resolving did', err)
+        }
+    }, [state])
+
+    const handleRemoveClick = useCallback((did: string) => {
+        confirmingRemove.value = did
+    }, [])
+
+    const handleCancelRemove = useCallback((ev:MouseEvent) => {
+        ev.preventDefault()
+        confirmingRemove.value = null
+    }, [])
+
+    const handleConfirmRemove = useCallback(async (did:string) => {
+        try {
+            await State.removeRepo(state, did)
+            confirmingRemove.value = null
+        } catch (err) {
+            debug('error removing repo', err)
         }
     }, [state])
 
@@ -40,21 +62,52 @@ export const FollowingRoute:FunctionComponent<{ state:AppState }> = function ({
             html`<ul>
                 ${data.map(r => {
                     const doc = resolvedDids.value[r.did]
+                    const isConfirming = confirmingRemove.value === r.did
                     return html`
                         <li>
-                            <details data-did=${r.did} onToggle=${handleToggle}>
-                                <summary>${r.did}</summary>
-                                <div class="details-inner">
-                                    ${doc ?
-                                        html`<pre>
-                                            ${JSON.stringify(doc, null, 2)}
-                                        </pre>` :
-                                        html`
-                                            <p class="loading">Loading...</p>
-                                        `
-                                    }
-                                </div>
-                            </details>
+                            <div>
+                                <details data-did=${r.did} onToggle=${handleToggle}>
+                                    <summary>
+                                        <span class="did-text">${r.did}</span>
+                                    </summary>
+                                    <div class="details-inner">
+                                        ${doc ?
+                                            html`<pre>
+                                                ${JSON.stringify(doc, null, 2)}
+                                            </pre>` :
+                                            html`
+                                                <p class="loading">Loading...</p>
+                                            `
+                                        }
+                                    </div>
+                                </details>
+
+                                ${isConfirming ? html`
+                                    <span class="confirm-remove">
+                                        Stop tracking?
+                                        <${Button}
+                                            class="confirm-btn"
+                                            onClick=${(e:MouseEvent) => {
+                                                e.preventDefault()
+                                                handleConfirmRemove(r.did)
+                                            }}
+                                        >Yes<//>
+                                        <${Button}
+                                            class="cancel-btn"
+                                            onClick=${handleCancelRemove}
+                                        >No<//>
+                                    </span>
+                                ` : html`
+                                    <button
+                                        class="remove-btn"
+                                        onClick=${(e: Event) => {
+                                            e.preventDefault()
+                                            handleRemoveClick(r.did)
+                                        }}
+                                        title="Remove"
+                                    ><${CloseX} /></button>
+                                `}
+                            </div>
                         </li>
                     `
                 })}
