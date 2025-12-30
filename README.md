@@ -1,6 +1,6 @@
 # taproom
 
-Look at information about a
+A view (clientside app) for information about a
 [tap server](https://github.com/bluesky-social/indigo/blob/main/cmd/tap/README.md).
 
 This is a Cloudflare application. It is visible on the public internet at
@@ -12,6 +12,10 @@ The demo version of this app [allows anonymous reads](#allow_anon_reads).
 It is using a tap server deployed specifically for this app, at
 [bskytap.fly.dev](https://bskytap.fly.dev/).
 
+>
+> [!IMPORTANT]  
+> This does depend on [a non-standard Tap instance](#faucet).
+>
 
 <details><summary><h2>Contents</h2></summary>
 
