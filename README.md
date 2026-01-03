@@ -64,6 +64,12 @@ Install dependencies:
 npm i
 ```
 
+Start docs:
+
+```sh
+mv README.example.md README.md
+```
+
 ### Faucet
 
 Note this depends on [a faucet](https://github.com/bskyprism/faucet) instance
