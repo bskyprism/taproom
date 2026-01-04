@@ -37,3 +37,11 @@ export interface AddRepoRequest {
 export interface RemoveRepoRequest {
     did:string
 }
+
+export interface SignalCollectionSettings {
+    nsid:string|null;
+}
+
+export interface UpdateSignalCollectionRequest {
+    nsid:string;
+}

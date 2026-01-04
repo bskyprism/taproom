@@ -38,7 +38,8 @@
 	"vars": {
 		"NODE_ENV": "staging",
 		"ALLOW_ANON_READS": true,
-		"TAP_SERVER_URL": "https://bskytap.fly.dev"
+		"TAP_SERVER_URL": "https://bskytap.fly.dev",
+		"FLY_TAP_APP_NAME": "bskytap"
 	},
 	"observability": {
 		"enabled": true

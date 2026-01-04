@@ -30,6 +30,7 @@ const NAV_ITEMS = [
     { href: '/', label: 'Dashboard' },
     { href: '/repos', label: 'Repos' },
     { href: '/lookup', label: 'Lookup' },
+    { href: '/settings', label: 'Settings' },
 ]
 
 export const Nav:FunctionComponent<{ state:AppState }> = function Nav ({

@@ -23,6 +23,9 @@ declare namespace Cloudflare {
         REGISTRATION_SECRET:string;
         taproom_auth:D1Database;
         AUTH_CHALLENGES:KVNamespace;
+        // Fly.io integration for TAP server config
+        FLY_API_TOKEN:string;
+        FLY_TAP_APP_NAME:string;
     }
 }
 

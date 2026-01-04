@@ -4,7 +4,7 @@ import { type Tap } from '@atproto/tap'
 import ky, { type HTTPError } from 'ky'
 import Debug from '@substrate-system/debug'
 import { type DidDocument } from '@atproto/identity'
-import type { TapHealth, TapStats } from '../shared.js'
+import type { TapHealth, TapStats, SignalCollectionSettings } from '../shared.js'
 import { parseHttpError, when } from './util.js'
 const debug = Debug('taproom:state')
 
@@ -22,6 +22,7 @@ export interface AuthStatus {
 
 export const AUTH_ROUTES:string[] = ([
     '/repos',
+    '/settings',
     import.meta.env.VITE_ALLOW_ANON_READS ? null : ['/', '/lookup']
 ]).filter(Boolean).flat()
 
@@ -48,6 +49,9 @@ export interface AppState {
     resolvedRepos:Signal<Record<string, DidDocument>>;
     repoPage:Signal<string|null>;
     error:Signal<string|null>;
+    // Settings state
+    signalCollection:Signal<SignalCollectionSettings|null>;
+    signalCollectionUpdating:Signal<boolean>;
     // Derived state
     isConnected:Signal<boolean>;
     isAuthenticated:Signal<boolean|null>;
@@ -68,6 +72,9 @@ export function State ():AppState {
         loading: signal<boolean>(false),
         didInfo: signal(RequestState()),
         error: signal<string|null>(null),
+        // Settings state
+        signalCollection: signal<SignalCollectionSettings|null>(null),
+        signalCollectionUpdating: signal<boolean>(false),
         // Derived state
         isConnected: computed(() => {
             return state.tapHealth.value?.status === 'ok'
@@ -325,4 +332,43 @@ State.RefreshAll = async function (state: AppState): Promise<void> {
         State.FetchHealth(state),
         State.FetchStats(state),
     ])
+}
+
+/**
+ * Fetch the current signal collection NSID from Fly.io
+ */
+State.FetchSignalCollection = async function (state:AppState):Promise<void> {
+    try {
+        const data = await ky.get('/api/settings/signal-collection')
+            .json<SignalCollectionSettings>()
+        state.signalCollection.value = data
+    } catch (err) {
+        debug('failed to fetch signal collection settings', err)
+    }
+}
+
+/**
+ * Update the signal collection NSID via Fly.io
+ */
+State.UpdateSignalCollection = async function (
+    state:AppState,
+    nsid:string
+):Promise<{ success:boolean; error?:string }> {
+    state.signalCollectionUpdating.value = true
+
+    try {
+        await ky.post('/api/settings/signal-collection', {
+            json: { nsid }
+        }).json<{ success:boolean; deploying:boolean }>()
+
+        // Update local state
+        state.signalCollection.value = { nsid }
+
+        return { success: true }
+    } catch (err) {
+        const message = await parseHttpError(err)
+        return { success: false, error: message }
+    } finally {
+        state.signalCollectionUpdating.value = false
+    }
 }

@@ -5,11 +5,13 @@ import { cors } from 'hono/cors'
 import { getCookie } from 'hono/cookie'
 import { Tap, formatAdminAuthHeader } from '@atproto/tap'
 import { createAuthRouter, requireAuth } from './auth.js'
+import { FlyClient, FlyApiError } from './fly.js'
 import type {
     TapHealth,
     TapStats,
     AddRepoRequest,
-    RemoveRepoRequest
+    RemoveRepoRequest,
+    UpdateSignalCollectionRequest
 } from '../shared.js'
 
 export type StatsPath =
@@ -29,10 +31,10 @@ app.use('/resolve/*', cors())
 app.route('/api/auth', createAuthRouter())
 
 /**
- * Protect write routes with passkey session auth
- * Falls back to bearer token for backwards compatibility / API access
+ * Auth middleware for protected routes.
+ * Checks for passkey session or bearer token.
  */
-app.use('/api/tap/repos/*', async (c, next) => {
+async function authMiddleware (c:Context<{ Bindings:Env }>, next:() => Promise<void>) {
     // Check for session cookie (passkey auth)
     const passkeyId = await requireAuth(c, getCookie)
     if (passkeyId) {
@@ -49,7 +51,18 @@ app.use('/api/tap/repos/*', async (c, next) => {
     }
 
     return c.text('Unauthorized', 401)
-})
+}
+
+/**
+ * Protect write routes with passkey session auth
+ * Falls back to bearer token for backwards compatibility / API access
+ */
+app.use('/api/tap/repos/*', authMiddleware)
+
+/**
+ * Protect settings routes with auth
+ */
+app.use('/api/settings/*', authMiddleware)
 
 /**
  * Health check for this server
@@ -284,6 +297,52 @@ app.post('/api/tap/repos/remove', async (c) => {
 })
 
 /**
+ * Get current signal collection NSID from Fly.io
+ */
+app.get('/api/settings/signal-collection', async (c) => {
+    try {
+        const fly = getFlyClient(c)
+        const nsid = await fly.getSignalCollection()
+        return c.json({ nsid })
+    } catch (err) {
+        const status:ContentfulStatusCode = err instanceof FlyApiError ?
+            err.status as ContentfulStatusCode :
+            500
+        const message = err instanceof Error ? err.message : 'Unknown error'
+        return c.text(message, status)
+    }
+})
+
+/**
+ * Update signal collection NSID via Fly.io Machines API
+ */
+app.post('/api/settings/signal-collection', async (c) => {
+    try {
+        const body = await c.req.json<UpdateSignalCollectionRequest>()
+
+        // Validate NSID format
+        if (!isValidNsid(body.nsid)) {
+            return c.json({ error: 'Invalid NSID format' }, 400)
+        }
+
+        const fly = getFlyClient(c)
+        await fly.setSignalCollection(body.nsid)
+
+        return c.json({
+            success: true,
+            nsid: body.nsid,
+            deploying: true
+        })
+    } catch (err) {
+        const status:ContentfulStatusCode = err instanceof FlyApiError ?
+            err.status as ContentfulStatusCode :
+            500
+        const message = err instanceof Error ? err.message : 'Unknown error'
+        return c.text(message, status)
+    }
+})
+
+/**
  * Serve static assets (Preact frontend)
  */
 app.all('*', (c) => {
@@ -380,4 +439,26 @@ function getTapClient (c:Context<{ Bindings:Env }>):Tap {
     return new Tap(c.env.TAP_SERVER_URL, {
         adminPassword: c.env.TAP_ADMIN_PASSWORD
     })
+}
+
+/**
+ * Create a Fly.io client instance.
+ */
+function getFlyClient (c:Context<{ Bindings:Env }>):FlyClient {
+    return new FlyClient(c.env.FLY_API_TOKEN, c.env.FLY_TAP_APP_NAME)
+}
+
+/**
+ * Validate NSID format.
+ * Format: authority.name.record (e.g., app.bsky.feed.post)
+ * - Minimum 3 segments
+ * - Lowercase alphanumeric with hyphens
+ * - Max 253 characters
+ */
+function isValidNsid (nsid:string):boolean {
+    if (!nsid || nsid.length > 253) return false
+    // Each segment: starts with letter, contains lowercase alphanumeric and hyphens
+    // Minimum 3 segments
+    const pattern = /^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*){2,}$/
+    return pattern.test(nsid)
 }
