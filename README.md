@@ -1,5 +1,8 @@
 # taproom
 
+[![license](https://img.shields.io/badge/license-Big_Time-blue?style=flat-square)](LICENSE)
+
+
 A view (clientside app) for information about a
 [tap server](https://github.com/bluesky-social/indigo/blob/main/cmd/tap/README.md).
 
