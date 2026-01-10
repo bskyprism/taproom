@@ -187,6 +187,7 @@ export const LoginRoute:FunctionComponent<{ state:AppState }> = function ({
                             type="password"
                             id="secret"
                             name="secret"
+                            autocomplete="password"
                             placeholder="abc123..."
                             value=${secret.value}
                             onInput=${(e:Event) => {
@@ -221,6 +222,7 @@ export const LoginRoute:FunctionComponent<{ state:AppState }> = function ({
                             id="secret"
                             name="secret"
                             placeholder="abc123..."
+                            autocomplete="password"
                             value=${secret.value}
                             onInput=${(e:Event) => {
                                 secret.value = (e.target as HTMLInputElement).value
