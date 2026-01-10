@@ -10,7 +10,7 @@ const debug = Debug('taproom:state')
 
 export type RequestFor<T, E=Error> = {
     pending:boolean;
-    data:null|T;
+    data:null|T|false;
     error:null|E
 }
 export type InfoType = Awaited<ReturnType<Tap['getRepoInfo']>>
@@ -254,7 +254,8 @@ State.FetchRepos = async function (state:AppState, cursor?:string):Promise<void>
     if (
         state.trackedRepos.value.pending ||
         state.trackedRepos.value.data ||
-        state.trackedRepos.value.error
+        state.trackedRepos.value.error ||
+        state.trackedRepos.value.data === false
     ) return
 
     state.trackedRepos.value = { ...state.trackedRepos.value, pending: true }
@@ -341,6 +342,14 @@ State.RefreshAll = async function (state: AppState): Promise<void> {
  * Fetch the current signal collection NSID from Fly.io
  */
 State.FetchSignalCollection = async function (state:AppState):Promise<void> {
+    if (
+        state.signalCollection.value.pending ||
+        state.signalCollection.value.data === false ||
+        state.signalCollection.value.error
+    ) {
+        return
+    }
+
     try {
         state.signalCollection.value = {
             ...state.signalCollection.value,
@@ -348,11 +357,11 @@ State.FetchSignalCollection = async function (state:AppState):Promise<void> {
         }
         const data = await ky.get('/api/settings/signal-collection')
             .json<SignalCollectionSettings>()
-        // state.signalCollection.value = data
+
         state.signalCollection.value = {
             ...state.signalCollection.value,
             pending: false,
-            data
+            data: data.nsid ? data : false
         }
     } catch (_err) {
         const err = _err as HTTPError
@@ -372,6 +381,14 @@ State.UpdateSignalCollection = async function (
     state:AppState,
     nsid:string
 ):Promise<AppState['signalCollection']> {
+    if (
+        state.signalCollection.value.data ||
+        state.signalCollection.value.error ||
+        state.signalCollection.value.pending
+    ) {
+        return state.signalCollection
+    }
+
     state.signalCollection.value = {
         ...state.signalCollection.value,
         pending: true
@@ -380,7 +397,7 @@ State.UpdateSignalCollection = async function (
     try {
         await ky.post('/api/settings/signal-collection', {
             json: { nsid }
-        }).json<{ success:boolean; deploying:boolean }>()
+        }).json<SignalCollectionSettings>()
 
         // Update local state
         state.signalCollection.value = {

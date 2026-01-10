@@ -30,7 +30,7 @@ code {
 
 div.error {
     border: 2px solid var(--color-error);
-    background-color: var(--color-err-bgc);
+    background-color: var(--color-error-bgc);
     padding: 1rem;
     margin-bottom: 1rem;
 }

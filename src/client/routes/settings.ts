@@ -1,5 +1,5 @@
 import { html } from 'htm/preact'
-import { useCallback, useEffect } from 'preact/hooks'
+import { useCallback } from 'preact/hooks'
 import type { FunctionComponent } from 'preact'
 import { batch, useSignal } from '@preact/signals'
 import Debug from '@substrate-system/debug'
@@ -18,11 +18,6 @@ export const SettingsRoute:FunctionComponent<{ state:AppState }> = function ({
     const error = useSignal<string|null>(null)
     const success = useSignal<string|null>(null)
     const deploying = useSignal(false)
-
-    // Fetch current signal collection on mount
-    useEffect(() => {
-        State.FetchSignalCollection(state)
-    }, [])
 
     const handleSubmit = useCallback(async (ev:SubmitEvent) => {
         ev.preventDefault()
