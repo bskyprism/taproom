@@ -243,8 +243,10 @@ State.FetchRepos = async function (state:AppState, cursor?:string):Promise<void>
     // the route match function is called on every render
     if (
         state.trackedRepos.value.pending ||
-        state.trackedRepos.value.data
+        state.trackedRepos.value.data ||
+        state.trackedRepos.value.error
     ) return
+
     state.trackedRepos.value = { ...state.trackedRepos.value, pending: true }
 
     try {
