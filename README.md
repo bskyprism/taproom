@@ -3,10 +3,10 @@
 [![license](https://img.shields.io/badge/license-Big_Time-blue?style=flat-square)](LICENSE)
 
 
-A view (clientside app) for information about a
+A view (clientside app) for a
 [tap server](https://github.com/bluesky-social/indigo/blob/main/cmd/tap/README.md).
 
-This is a Cloudflare application. It is visible on the public internet at
+This is a Cloudflare application. A demo is visible on the public internet at
 [bskytaproom.dev](https://bskytaproom.dev/).
 
 There are [several env variables](#config) you can use to configure things.
