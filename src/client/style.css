@@ -15,6 +15,7 @@
     --color-danger: #dc2626;
     --color-error: #dc2626;
     --color-error-hover: #b91c1c;
+    --color-error-bgc: #ff00000d;
     --spacing: 1rem;
     --min: 20ch;
 }
@@ -25,6 +26,13 @@
 
 code {
     font-size: 1rem;
+}
+
+div.error {
+    border: 2px solid var(--color-error);
+    background-color: var(--color-err-bgc);
+    padding: 1rem;
+    margin-bottom: 1rem;
 }
 
 div.explanation {

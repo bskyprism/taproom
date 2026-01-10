@@ -73,13 +73,18 @@ export const ReposRoute:FunctionComponent<{ state:AppState }> = function ({
             await State.FetchStats(state)
         } catch (err) {
             debug('error removing repo', err)
-            rmError.value = err instanceof Error ? err.message : 'Failed to remove repo'
+            rmError.value = err instanceof Error ?
+                err.message :
+                'Failed to remove repo'
         } finally {
             rmSubmitting.value = false
         }
     }, [])
 
     return html`<div class="route repos">
+        ${state.trackedRepos.value.error && html`<div class="error">
+            ${state.trackedRepos.value.error.message}
+        </div>`}
         <h2>Repos</h2>
 
         <${FollowingCount} state=${state} />
