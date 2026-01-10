@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.19.0",
-    "@cloudflare/workers-types": "^4.20250109.0",
+    "@cloudflare/workers-types": "^4.20251230.0",
     "@playwright/test": "^1.57.0",
     "@preact/preset-vite": "^2.9.4",
     "@substrate-system/debug": "^0.9.49",
