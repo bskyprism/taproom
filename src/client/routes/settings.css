@@ -9,6 +9,15 @@
         padding-bottom: 2rem;
         border-bottom: 1px solid;
 
+        & form {
+            margin: 0 auto;
+            margin-top: 2rem;
+        }
+
+        & dl {
+            margin-top: 2rem;
+        }
+
         &:last-child {
             border-bottom: none;
         }
@@ -62,8 +71,12 @@
     & .hint {
         display: block;
         margin-top: 0.25rem;
-        color: var(--color-text-muted, #666);
         font-size: 0.85rem;
+        margin-bottom: 1rem;
+
+        & code {
+            font-size: 0.85rem;
+        }
     }
 
     & .response {

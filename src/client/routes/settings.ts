@@ -7,6 +7,7 @@ import { Button } from '../components/button.js'
 import { State } from '../state.js'
 import type { AppState } from '../state.js'
 import './settings.css'
+import { NBSP } from '../constants.js'
 const debug = Debug('taproom:settings')
 
 export const SettingsRoute:FunctionComponent<{ state:AppState }> = function ({
@@ -75,10 +76,20 @@ export const SettingsRoute:FunctionComponent<{ state:AppState }> = function ({
         <h2>Settings</h2>
 
         <section class="signal-collection">
-            <header>
-                <h3>Signal Collection</h3>
-                <p>Configure which NSID to use for signal collection.</p>
-            </header>
+            <h3>Signal Collection</h3>
+            <p>
+                Configure which NSID to use for the${NBSP}
+                <a href="https://github.com/bluesky-social/indigo/blob/main/cmd/tap/README.md#configuration">
+                    signal collection
+                </a>.
+            </p>
+
+            <dl>
+                <dt>Current Signal Collection</dt>
+                <dd>
+                    ${currentNsid || html`<em>none</em>`}
+                </dd>
+            </dl>
 
             ${currentNsid && html`
                 <div class="current-value">
@@ -87,44 +98,47 @@ export const SettingsRoute:FunctionComponent<{ state:AppState }> = function ({
                 </div>
             `}
 
-            <div class="section-grid">
-                <form onSubmit=${handleSubmit}>
-                    <div class="input">
-                        <label for="nsid">NSID</label>
-                        <input
-                            type="text"
-                            placeholder="app.bsky.feed.post"
-                            name="nsid"
-                            id="nsid"
-                            value=${nsidInput.value}
-                            onInput=${(e:Event) => {
-                                nsidInput.value = (e.target as HTMLInputElement).value
-                            }}
-                            disabled=${submitting.value || deploying.value}
-                        />
-                        <small class="hint">
-                            Format: authority.name.record (e.g., app.bsky.feed.post)
-                        </small>
-                    </div>
-                    <div class="controls">
-                        <${Button}
-                            type="submit"
-                            isSpinning=${submitting}
-                            disabled=${!nsidInput.value.trim() || deploying.value}
-                        >
-                            ${deploying.value ? 'Deploying...' : 'Update'}
-                        <//>
-                    </div>
-                </form>
-
-                <div class="response">
-                    ${error.value && html`<p class="error">${error.value}</p>`}
-                    ${success.value && html`<p class="success">${success.value}</p>`}
-                    ${!error.value && !success.value && html`
-                        <p class="placeholder">-</p>
-                    `}
+            <form onSubmit=${handleSubmit}>
+                <label for="nsid">
+                    <a href="https://atproto.com/specs/nsid">NSID</a>
+                </label>
+                <div class="input">
+                    <input
+                        type="text"
+                        placeholder="app.bsky.feed.post"
+                        name="nsid"
+                        id="nsid"
+                        value=${nsidInput.value}
+                        onInput=${(e:Event) => {
+                            nsidInput.value = (e.target as HTMLInputElement).value
+                        }}
+                        disabled=${submitting.value || deploying.value}
+                    />
                 </div>
-            </div>
+                <small class="hint">
+                    Format: authority.name.record
+                    (e.g., <code>app.bsky.feed.post</code>)
+                </small>
+
+                <p>
+                    This depends on <a href="https://fly.io/">fly.io</a>${NBSP}
+                    as a host for tap, because when you submit the form,
+                    this page makes a call to the fly host and resets
+                    an env variable, <a href="https://github.com/bluesky-social/indigo/blob/main/cmd/tap/README.md#configuration">
+                        <code>TAP_SIGNAL_COLLECTION</code>
+                    </a>.
+                </p>
+
+                <div class="controls">
+                    <${Button}
+                        type="submit"
+                        isSpinning=${submitting}
+                        disabled=${!nsidInput.value.trim() || deploying.value}
+                    >
+                        ${deploying.value ? 'Deploying...' : 'Update'}
+                    <//>
+                </div>
+            </form>
         </section>
     </div>`
 }
