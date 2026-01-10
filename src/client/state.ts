@@ -30,7 +30,7 @@ export const AUTH_ROUTES:string[] = ([
  * Create initial request state.
  * @returns {RequestFor<T, E>}
  */
-export function RequestState<T = any, E=Error> ():RequestFor<T, E> {
+export function RequestState<T=any, E=Error> ():RequestFor<T, E> {
     return { pending: false, data: null, error: null }
 }
 
@@ -50,7 +50,8 @@ export interface AppState {
     repoPage:Signal<string|null>;
     error:Signal<string|null>;
     // Settings state
-    signalCollection:Signal<SignalCollectionSettings|null>;
+    // signalCollection:Signal<SignalCollectionSettings|null>;
+    signalCollection:Signal<RequestFor<SignalCollectionSettings, HTTPError>>;
     signalCollectionUpdating:Signal<boolean>;
     // Derived state
     isConnected:Signal<boolean>;
@@ -73,7 +74,9 @@ export function State ():AppState {
         didInfo: signal(RequestState()),
         error: signal<string|null>(null),
         // Settings state
-        signalCollection: signal<SignalCollectionSettings|null>(null),
+        signalCollection: signal<RequestFor<SignalCollectionSettings, HTTPError>>(
+            RequestState<SignalCollectionSettings, HTTPError>()
+        ),
         signalCollectionUpdating: signal<boolean>(false),
         // Derived state
         isConnected: computed(() => {
@@ -339,11 +342,26 @@ State.RefreshAll = async function (state: AppState): Promise<void> {
  */
 State.FetchSignalCollection = async function (state:AppState):Promise<void> {
     try {
+        state.signalCollection.value = {
+            ...state.signalCollection.value,
+            pending: true
+        }
         const data = await ky.get('/api/settings/signal-collection')
             .json<SignalCollectionSettings>()
-        state.signalCollection.value = data
-    } catch (err) {
-        debug('failed to fetch signal collection settings', err)
+        // state.signalCollection.value = data
+        state.signalCollection.value = {
+            ...state.signalCollection.value,
+            pending: false,
+            data
+        }
+    } catch (_err) {
+        const err = _err as HTTPError
+        debug('failed to fetch signal collection', err)
+        state.signalCollection.value = {
+            ...state.signalCollection.value,
+            pending: false,
+            error: err
+        }
     }
 }
 
@@ -353,8 +371,11 @@ State.FetchSignalCollection = async function (state:AppState):Promise<void> {
 State.UpdateSignalCollection = async function (
     state:AppState,
     nsid:string
-):Promise<{ success:boolean; error?:string }> {
-    state.signalCollectionUpdating.value = true
+):Promise<AppState['signalCollection']> {
+    state.signalCollection.value = {
+        ...state.signalCollection.value,
+        pending: true
+    }
 
     try {
         await ky.post('/api/settings/signal-collection', {
@@ -362,13 +383,21 @@ State.UpdateSignalCollection = async function (
         }).json<{ success:boolean; deploying:boolean }>()
 
         // Update local state
-        state.signalCollection.value = { nsid }
-
-        return { success: true }
-    } catch (err) {
+        state.signalCollection.value = {
+            ...state.signalCollection.value,
+            pending: false,
+            data: { nsid }
+        }
+        return state.signalCollection
+    } catch (_err) {
+        const err = _err as HTTPError
         const message = await parseHttpError(err)
-        return { success: false, error: message }
-    } finally {
-        state.signalCollectionUpdating.value = false
+        debug('error', message)
+        state.signalCollection.value = {
+            ...state.signalCollection.value,
+            pending: false,
+            error: err
+        }
+        return state.signalCollection
     }
 }

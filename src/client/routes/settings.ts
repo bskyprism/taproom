@@ -7,7 +7,7 @@ import { Button } from '../components/button.js'
 import { State } from '../state.js'
 import type { AppState } from '../state.js'
 import './settings.css'
-import { NBSP } from '../constants.js'
+import { ELLIPSIS, NBSP } from '../constants.js'
 const debug = Debug('taproom:settings')
 
 export const SettingsRoute:FunctionComponent<{ state:AppState }> = function ({
@@ -35,13 +35,15 @@ export const SettingsRoute:FunctionComponent<{ state:AppState }> = function ({
         })
 
         try {
+            // result is state.signalCollection
             const result = await State.UpdateSignalCollection(
                 state,
                 nsidInput.value.trim()
             )
 
-            if (!result.success) {
-                error.value = result.error || 'Failed to update'
+            if (result.value.error) {
+                error.value = (await result.value.error.response.text()) ||
+                    'Failure' + ELLIPSIS
                 submitting.value = false
                 return
             }
@@ -70,7 +72,7 @@ export const SettingsRoute:FunctionComponent<{ state:AppState }> = function ({
         }
     }, [])
 
-    const currentNsid = state.signalCollection.value?.nsid
+    const currentNsid = state.signalCollection.value.data?.nsid
 
     return html`<div class="route settings">
         <h2>Settings</h2>

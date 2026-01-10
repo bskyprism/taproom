@@ -5,9 +5,15 @@
     }
 
     & section {
-        margin-top: 2rem;
         padding-bottom: 2rem;
         border-bottom: 1px solid;
+        max-width: 35rem;
+        margin: 0 auto;
+        margin-top: 2rem;
+
+        & h3 {
+            border-bottom: 2px solid;
+        }
 
         & form {
             margin: 0 auto;
